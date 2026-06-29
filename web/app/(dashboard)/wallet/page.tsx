@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { formatKES, formatDate, MEMBERSHIP_COST } from "@/lib/shared";
 import type { WalletResponse, ActivateMembershipResponse } from "@/lib/types";
 
 export default function WalletPage() {
+  const router = useRouter();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["wallet"],
@@ -18,7 +20,10 @@ export default function WalletPage() {
 
   const activateMutation = useMutation({
     mutationFn: () => api.post<ActivateMembershipResponse>("/wallet/activate-membership"),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["wallet"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["wallet"] });
+      router.push("/tasks");
+    },
   });
 
   const [transferTo, setTransferTo] = useState("");

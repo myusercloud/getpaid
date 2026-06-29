@@ -28,7 +28,7 @@ export async function activateMembership(userId: string) {
     db.wallet.update({
       where: { userId },
       data: {
-        virtualBalance: { increment: MEMBERSHIP_BONUS },
+        virtualBalance: { decrement: MEMBERSHIP_COST - MEMBERSHIP_BONUS },
         totalEarned: { increment: MEMBERSHIP_BONUS },
         transactions: {
           create: [

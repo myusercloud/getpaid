@@ -28,7 +28,13 @@ export async function registerUser(input: RegisterInput) {
       password: hashed,
       referralCode: code,
       referredById: referredBy ?? undefined,
-      wallet: { create: {} },
+      wallet: {
+        create: {
+          virtualBalance: 200,
+          totalEarned: 200,
+          transactions: { create: { type: "REGISTRATION_CREDIT", amount: 200, description: "Welcome bonus — enough to activate your membership" } },
+        },
+      },
     },
     select: userSelect,
   });

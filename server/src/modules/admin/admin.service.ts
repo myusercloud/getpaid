@@ -56,7 +56,7 @@ export async function createTask(data: CreateTaskInput) {
 }
 
 export async function updateTask(id: string, data: Partial<CreateTaskInput & { isActive: boolean }>) {
-  return db.task.update({ where: { id }, data });
+  return db.task.update({ where: { id }, data: { ...data, type: data.type as any } });
 }
 
 export async function getAdminVideos() {

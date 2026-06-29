@@ -76,27 +76,41 @@ export async function updateVideo(id: string, data: Partial<CreateVideoInput & {
 export async function refreshVideos(count = 5) {
   const videos = await fetchRandomYouTubeVideos(count);
 
-  // Deactivate all active videos first (safe — doesn't delete, preserves VideoWatch FK records)
+  // Deactivate all active videos (safe — preserves VideoWatch FK records)
   await db.video.updateMany({ where: { isActive: true }, data: { isActive: false } });
 
-  // Upsert by youtubeId so duplicate fetches don't create duplicate rows
+  // Upsert by youtubeId — duplicate fetches won't create duplicate rows
   const upserted = await Promise.all(
-    videos.map((v) =>
-      db.video.upsert({
+    videos.map((v) => {
+      // Shorter videos need higher watch % to feel meaningful;
+      // longer ones use a lower threshold so it stays achievable.
+      const minWatchPercent = v.duration < 300 ? 80 : v.duration < 600 ? 70 : 60;
+      // Reward scales slightly with duration
+      const reward = v.duration < 300 ? 15 : v.duration < 600 ? 20 : 25;
+
+      return db.video.upsert({
         where: { youtubeId: v.youtubeId },
-        update: { title: v.title, description: v.description, thumbnail: v.thumbnail, isActive: true },
+        update: {
+          title: v.title,
+          description: v.description,
+          thumbnail: v.thumbnail,
+          duration: v.duration,
+          minWatchPercent,
+          reward,
+          isActive: true,
+        },
         create: {
           title: v.title,
           description: v.description,
           youtubeId: v.youtubeId,
           thumbnail: v.thumbnail,
-          duration: 600,
-          minWatchPercent: 60,
-          reward: 25,
+          duration: v.duration,
+          minWatchPercent,
+          reward,
           isActive: true,
         },
-      })
-    )
+      });
+    })
   );
 
   return { refreshed: upserted.length, videos: upserted };

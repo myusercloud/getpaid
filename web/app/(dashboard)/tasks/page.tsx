@@ -11,32 +11,6 @@ import { formatKES } from "@/lib/shared";
 import Link from "next/link";
 import type { TasksResponse, CompleteTaskResponse, VideosResponse, VideoProgressResponse, WalletResponse } from "@/lib/types";
 
-// ── YouTube API singleton ──────────────────────────────────────────────────
-// Loads the YT IFrame API once and notifies all subscribers when ready.
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  interface Window { YT: any; onYouTubeIframeAPIReady: () => void; }
-}
-
-const ytSubscribers: Array<() => void> = [];
-let ytApiLoaded = false;
-
-function onYTReady(cb: () => void) {
-  if (ytApiLoaded && window.YT?.Player) { cb(); return; }
-  ytSubscribers.push(cb);
-  if (typeof window === "undefined") return;
-  if (!document.getElementById("yt-api-script")) {
-    window.onYouTubeIframeAPIReady = () => {
-      ytApiLoaded = true;
-      ytSubscribers.splice(0).forEach((fn) => fn());
-    };
-    const s = document.createElement("script");
-    s.id = "yt-api-script";
-    s.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(s);
-  }
-}
-// ──────────────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
   const qc = useQueryClient();
@@ -182,87 +156,70 @@ export default function TasksPage() {
 }
 
 // ── VideoTaskCard ──────────────────────────────────────────────────────────
+// Progress is tracked via a wall-clock timer rather than the YT IFrame API.
+// The YT Player API modifies the iframe's src on init, which triggers React
+// to reconcile and reload the iframe — causing the "goes back to thumbnail"
+// bug. Keeping React fully in control of the iframe (no third-party DOM
+// mutations) makes playback stable.
 
 function VideoTaskCard({ video, onComplete }: {
   video: VideosResponse["videos"][number];
   onComplete: () => void;
 }) {
-  const iframeId = `yt-iframe-${video.id}`;
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(video.percentWatched ?? 0);
   const [rewarded, setRewarded] = useState(video.isRewarded);
-  const [tracking, setTracking] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const playerRef = useRef<any>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const rewardedRef = useRef(rewarded);
-  rewardedRef.current = rewarded;
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedRef = useRef(0);
 
   const progressMutation = useMutation({
     mutationFn: (pct: number) =>
       api.post<VideoProgressResponse>(`/tasks/videos/${video.id}/progress`, {
-        watchedSeconds: Math.round((pct / 100) * (video.duration ?? 300)),
+        watchedSeconds: Math.round((pct / 100) * (video.duration ?? 600)),
         percentWatched: pct,
       }),
     onSuccess: (res) => {
-      if (res.rewarded && !rewardedRef.current) {
+      if (res.rewarded && !rewarded) {
         setRewarded(true);
         onComplete();
       }
     },
   });
 
-  // Wrap the rendered iframe with YT.Player for tracking once it's in the DOM
   useEffect(() => {
     if (!open || rewarded) return;
 
-    let destroyed = false;
+    const threshold = video.minWatchPercent ?? 60;
+    // How many real seconds the user needs the video open to earn the reward
+    const secondsNeeded = Math.round((threshold / 100) * (video.duration ?? 600));
 
-    function startPolling() {
-      if (destroyed) return;
-      setTracking(true);
-      intervalRef.current = setInterval(() => {
-        try {
-          const player = playerRef.current;
-          const duration = player?.getDuration?.() ?? 0;
-          const current = player?.getCurrentTime?.() ?? 0;
-          if (duration > 0) {
-            const pct = Math.round((current / duration) * 100);
-            setProgress(pct);
-            if (pct >= (video.minWatchPercent ?? 80) && !rewardedRef.current) {
-              progressMutation.mutate(pct);
-            }
-          }
-        } catch { /* player not ready */ }
-      }, 3000);
-    }
+    timerRef.current = setInterval(() => {
+      elapsedRef.current += 1;
+      const pct = Math.min(
+        Math.round((elapsedRef.current / secondsNeeded) * threshold),
+        threshold,
+      );
+      setProgress(pct);
 
-    function initPlayer() {
-      if (destroyed || !document.getElementById(iframeId)) return;
-      // Wrap the existing <iframe> — do NOT pass videoId here so it doesn't replace/reset the iframe
-      playerRef.current = new window.YT.Player(iframeId, {
-        events: { onReady: startPolling },
-      });
-    }
-
-    onYTReady(initPlayer);
+      if (elapsedRef.current >= secondsNeeded) {
+        clearInterval(timerRef.current!);
+        progressMutation.mutate(threshold);
+      }
+    }, 1000);
 
     return () => {
-      destroyed = true;
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      try { playerRef.current?.destroy(); } catch { /* ignore */ }
-      playerRef.current = null;
-      setTracking(false);
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [open, video.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const threshold = video.minWatchPercent ?? 80;
+  const threshold = video.minWatchPercent ?? 60;
+  const secondsNeeded = Math.round((threshold / 100) * (video.duration ?? 600));
+  const secondsLeft = Math.max(secondsNeeded - elapsedRef.current, 0);
 
   return (
     <Card>
       {/* Header row */}
       <div className="flex items-start gap-3">
-        {/* Thumbnail */}
         <div className="relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900">
           <Image
             src={video.thumbnail ?? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
@@ -288,7 +245,6 @@ function VideoTaskCard({ video, onComplete }: {
           )}
         </div>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm font-medium text-gray-900 leading-snug">{video.title}</h3>
@@ -308,8 +264,10 @@ function VideoTaskCard({ video, onComplete }: {
                 {open ? "▲ Hide video" : "▶ Watch to earn"}
               </button>
             )}
-            {tracking && !rewarded && (
-              <span className="text-xs text-gray-400 animate-pulse">● Tracking progress</span>
+            {open && !rewarded && progress > 0 && (
+              <span className="text-xs text-gray-400 animate-pulse">
+                ● {secondsLeft > 0 ? `${Math.ceil(secondsLeft / 60)}m left` : "Claiming…"}
+              </span>
             )}
             {rewarded && (
               <span className="text-xs text-green-600 font-medium">+{formatKES(video.reward)} earned</span>
@@ -321,23 +279,22 @@ function VideoTaskCard({ video, onComplete }: {
       {/* Progress bar */}
       <div className="mt-3">
         <Progress
-          value={Math.min(progress, 100)}
+          value={Math.min((progress / threshold) * 100, 100)}
           label={
             rewarded
               ? "Reward claimed!"
               : progress === 0
-              ? `Watch ${threshold}% of the video to earn +${formatKES(video.reward)}`
-              : `${progress}% watched — need ${threshold}% to earn`
+              ? `Watch ~${Math.ceil(secondsNeeded / 60)} min to earn +${formatKES(video.reward)}`
+              : `${progress}% / ${threshold}% — keep watching`
           }
         />
       </div>
 
-      {/* Inline iframe — rendered by React so it keeps w-full h-full, then YT.Player wraps it */}
+      {/* Iframe — React owns this entirely, no third-party DOM mutations */}
       {open && !rewarded && (
         <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-900">
           <iframe
-            id={iframeId}
-            src={`https://www.youtube.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
+            src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0&modestbranding=1`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -346,7 +303,6 @@ function VideoTaskCard({ video, onComplete }: {
         </div>
       )}
 
-      {/* Success banner */}
       {rewarded && (
         <div className="mt-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
           <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requireAdmin } from "../../middleware/auth";
-import { getAdminStats, getAdminUsers, getAdminTasks, createTask, updateTask, getAdminVideos, createVideo, updateVideo } from "./admin.service";
+import { getAdminStats, getAdminUsers, getAdminTasks, createTask, updateTask, getAdminVideos, createVideo, updateVideo, refreshVideos } from "./admin.service";
 
 export async function adminRoutes(app: FastifyInstance) {
   app.get("/stats", { preHandler: [requireAdmin] }, async (_req, reply) => reply.send(await getAdminStats()));
@@ -29,5 +29,12 @@ export async function adminRoutes(app: FastifyInstance) {
   app.put("/videos/:id", { preHandler: [requireAdmin] }, async (req, reply) => {
     const { id } = req.params as { id: string };
     reply.send(await updateVideo(id, req.body as any));
+  });
+
+  app.post("/videos/refresh", { preHandler: [requireAdmin] }, async (req, reply) => {
+    const schema = z.object({ count: z.number().min(1).max(10).optional() });
+    const body = schema.safeParse(req.body ?? {});
+    if (!body.success) return reply.code(400).send({ error: body.error.errors[0].message });
+    reply.send(await refreshVideos(body.data.count ?? 5));
   });
 }

@@ -1,4 +1,5 @@
 import { db } from "../../lib/db";
+import { fetchRandomYouTubeVideos } from "../../lib/youtube";
 import { startOfDay } from "date-fns";
 
 type CreateTaskInput = { title: string; description?: string; type: string; reward: number; cooldownHours: number; maxPerDay: number; contentUrl?: string };
@@ -70,4 +71,33 @@ export async function createVideo(data: CreateVideoInput) {
 
 export async function updateVideo(id: string, data: Partial<CreateVideoInput & { isActive: boolean }>) {
   return db.video.update({ where: { id }, data });
+}
+
+export async function refreshVideos(count = 5) {
+  const videos = await fetchRandomYouTubeVideos(count);
+
+  // Deactivate all active videos first (safe — doesn't delete, preserves VideoWatch FK records)
+  await db.video.updateMany({ where: { isActive: true }, data: { isActive: false } });
+
+  // Upsert by youtubeId so duplicate fetches don't create duplicate rows
+  const upserted = await Promise.all(
+    videos.map((v) =>
+      db.video.upsert({
+        where: { youtubeId: v.youtubeId },
+        update: { title: v.title, description: v.description, thumbnail: v.thumbnail, isActive: true },
+        create: {
+          title: v.title,
+          description: v.description,
+          youtubeId: v.youtubeId,
+          thumbnail: v.thumbnail,
+          duration: 600,
+          minWatchPercent: 60,
+          reward: 25,
+          isActive: true,
+        },
+      })
+    )
+  );
+
+  return { refreshed: upserted.length, videos: upserted };
 }

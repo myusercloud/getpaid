@@ -75,13 +75,9 @@ export default function WalletPage() {
             This deducts KES {MEMBERSHIP_COST} from your virtual balance. No real payment is made.
           </div>
           {activateMutation.error && <p className="text-sm text-red-600 mb-3">{activateMutation.error instanceof ApiError ? activateMutation.error.message : "Activation failed"}</p>}
-          {activateMutation.isSuccess && <p className="text-sm text-green-600 mb-3">Membership activated! +KES 20 bonus credited.</p>}
-          <Button onClick={() => activateMutation.mutate()} loading={activateMutation.isPending} disabled={(wallet?.virtualBalance ?? 0) < MEMBERSHIP_COST}>
+          <Button onClick={() => activateMutation.mutate()} loading={activateMutation.isPending}>
             Activate for KES {MEMBERSHIP_COST}
           </Button>
-          {(wallet?.virtualBalance ?? 0) < MEMBERSHIP_COST && (
-            <p className="text-xs text-red-500 mt-2">Insufficient balance. You need KES {MEMBERSHIP_COST - (wallet?.virtualBalance ?? 0)} more.</p>
-          )}
         </Card>
       )}
 

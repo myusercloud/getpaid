@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TaskType {
+  DAILY_LOGIN
+  LIKE_POST
+  VIEW_CONTENT
+  QUIZ_COMPLETION
+  WATCH_VIDEO
+  CUSTOM
+}
+
+enum TransactionType {
+  MEMBERSHIP_ACTIVATION
+  TASK_REWARD
+  VIDEO_REWARD
+  REFERRAL_BONUS
+  TRANSFER_SENT
+  TRANSFER_RECEIVED
+  REGISTRATION_CREDIT
+}
+
+enum ReferralStatus {
+  PENDING
+  ACTIVE
+  REWARDED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  password     String
+  role         Role      @default(USER)
+  referralCode String    @unique
+  referredById String?
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  wallet          Wallet?
+  membership      Membership?
+  taskCompletions TaskCompletion[]
+  videoWatches    VideoWatch[]
+  notifications   Notification[]
+
+  referredBy    User?      @relation("ReferralTree", fields: [referredById], references: [id])
+  referredUsers User[]     @relation("ReferralTree")
+  referralsGiven    Referral[] @relation("ReferrerUser")
+  referralReceived  Referral?  @relation("ReferredUser")
+
+  sentTransfers     Transaction[] @relation("SenderTx")
+  receivedTransfers Transaction[] @relation("ReceiverTx")
+
+  @@index([email])
+}
+
+model Wallet {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  virtualBalance Float    @default(0)
+  pendingRewards Float    @default(0)
+  totalEarned    Float    @default(0)
+  totalWithdrawn Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  walletId    String
+  type        TransactionType
+  amount      Float
+  description String?
+  senderId    String?
+  receiverId  String?
+  createdAt   DateTime        @default(now())
+
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  sender   User?  @relation("SenderTx", fields: [senderId], references: [id])
+  receiver User?  @relation("ReceiverTx", fields: [receiverId], references: [id])
+
+  @@index([walletId, createdAt])
+}
+
+model Membership {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  isActive    Boolean  @default(true)
+  cost        Float    @default(150)
+  activatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  type          TaskType
+  reward        Float
+  cooldownHours Int      @default(24)
+  maxPerDay     Int      @default(1)
+  isActive      Boolean  @default(true)
+  contentUrl    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  completions TaskCompletion[]
+}
+
+model TaskCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  taskId      String?
+  videoId     String?
+  reward      Float
+  completedAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task  Task?  @relation(fields: [taskId], references: [id])
+  video Video? @relation(fields: [videoId], references: [id])
+
+  @@index([userId, completedAt])
+  @@index([userId, taskId])
+}
+
+model Video {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  youtubeId       String   @unique
+  thumbnail       String?
+  duration        Int
+  minWatchPercent Int      @default(80)
+  reward          Float
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  completions  TaskCompletion[]
+  videoWatches VideoWatch[]
+}
+
+model VideoWatch {
+  id             String    @id @default(cuid())
+  userId         String
+  videoId        String
+  watchedSeconds Int       @default(0)
+  percentWatched Float     @default(0)
+  rewarded       Boolean   @default(false)
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id])
+
+  @@unique([userId, videoId])
+}
+
+model Referral {
+  id          String         @id @default(cuid())
+  referrerId  String
+  referredId  String         @unique
+  status      ReferralStatus @default(PENDING)
+  bonusAmount Float          @default(0)
+  createdAt   DateTime       @default(now())
+  activatedAt DateTime?
+
+  referrer User @relation("ReferrerUser", fields: [referrerId], references: [id])
+  referred User @relation("ReferredUser", fields: [referredId], references: [id])
+
+  @@index([referrerId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}

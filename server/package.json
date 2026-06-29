@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "dotenv -e .env -- tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "db:push": "dotenv -e .env -- prisma db push --schema ./prisma/schema.prisma",
     "db:seed": "dotenv -e .env -- tsx prisma/seed.ts",
     "db:reset": "dotenv -e .env -- prisma migrate reset --force --schema ./prisma/schema.prisma",

@@ -187,7 +187,7 @@ function VideoTaskCard({ video, onComplete }: {
   video: VideosResponse["videos"][number];
   onComplete: () => void;
 }) {
-  const containerId = `yt-container-${video.id}`;
+  const iframeId = `yt-iframe-${video.id}`;
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(video.percentWatched ?? 0);
   const [rewarded, setRewarded] = useState(video.isRewarded);
@@ -212,7 +212,7 @@ function VideoTaskCard({ video, onComplete }: {
     },
   });
 
-  // Start tracking when the player div is in the DOM
+  // Wrap the rendered iframe with YT.Player for tracking once it's in the DOM
   useEffect(() => {
     if (!open || rewarded) return;
 
@@ -233,15 +233,14 @@ function VideoTaskCard({ video, onComplete }: {
               progressMutation.mutate(pct);
             }
           }
-        } catch { /* player not ready yet */ }
+        } catch { /* player not ready */ }
       }, 3000);
     }
 
     function initPlayer() {
-      if (destroyed) return;
-      playerRef.current = new window.YT.Player(containerId, {
-        videoId: video.youtubeId,
-        playerVars: { rel: 0, modestbranding: 1 },
+      if (destroyed || !document.getElementById(iframeId)) return;
+      // Wrap the existing <iframe> — do NOT pass videoId here so it doesn't replace/reset the iframe
+      playerRef.current = new window.YT.Player(iframeId, {
         events: { onReady: startPolling },
       });
     }
@@ -261,7 +260,7 @@ function VideoTaskCard({ video, onComplete }: {
 
   return (
     <Card>
-      {/* Header */}
+      {/* Header row */}
       <div className="flex items-start gap-3">
         {/* Thumbnail */}
         <div className="relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900">
@@ -319,7 +318,7 @@ function VideoTaskCard({ video, onComplete }: {
         </div>
       </div>
 
-      {/* Progress bar — always visible */}
+      {/* Progress bar */}
       <div className="mt-3">
         <Progress
           value={Math.min(progress, 100)}
@@ -333,10 +332,17 @@ function VideoTaskCard({ video, onComplete }: {
         />
       </div>
 
-      {/* Embedded player — lazy mounted */}
+      {/* Inline iframe — rendered by React so it keeps w-full h-full, then YT.Player wraps it */}
       {open && !rewarded && (
         <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-900">
-          <div id={containerId} className="w-full h-full" />
+          <iframe
+            id={iframeId}
+            src={`https://www.youtube.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
+            title={video.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full border-0"
+          />
         </div>
       )}
 

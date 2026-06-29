@@ -8,10 +8,14 @@ class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const hasBody = options.body !== undefined;
   const res = await fetch(`${BASE}${path}`, {
     ...options,
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers: {
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
+      ...options.headers,
+    },
   });
 
   if (!res.ok) {

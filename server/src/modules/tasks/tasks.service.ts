@@ -1,37 +1,59 @@
 import { db } from "../../lib/db";
 import { DAILY_TASK_LIMIT } from "../../lib/constants";
+import { refreshVideos } from "../../lib/videoRefresh";
 import { startOfDay, subHours } from "date-fns";
 
-export async function getTasks(userId: string) {
-  const todayStart = startOfDay(new Date());
+// In-memory gate: prevents multiple refreshes within the same calendar day.
+// Resets on server restart, which is fine — the DB check below is the real guard.
+let lastRefreshedDate = "";
 
-  const [tasks, completions] = await Promise.all([
-    db.task.findMany({ where: { isActive: true }, orderBy: { reward: "desc" } }),
-    db.taskCompletion.findMany({
-      where: { userId, completedAt: { gte: todayStart }, taskId: { not: null } },
-      select: { taskId: true, completedAt: true },
-    }),
-  ]);
+async function ensureDailyVideos(): Promise<void> {
+  const today = new Date().toISOString().split("T")[0];
+  if (lastRefreshedDate === today) return;
 
-  const totalTasksToday = completions.length;
-  const completionMap = new Map<string, Date[]>();
-  for (const c of completions) {
-    if (!c.taskId) continue;
-    const arr = completionMap.get(c.taskId) ?? [];
-    arr.push(c.completedAt);
-    completionMap.set(c.taskId, arr);
+  const dayStart = startOfDay(new Date());
+  const count = await db.video.count({ where: { isActive: true, updatedAt: { gte: dayStart } } });
+
+  if (count >= 5) {
+    lastRefreshedDate = today;
+    return;
   }
 
-  const tasksWithStatus = tasks.map((task) => {
-    const todayCompletions = completionMap.get(task.id) ?? [];
-    const completionsToday = todayCompletions.length;
-    const lastCompletion = [...todayCompletions].sort((a, b) => b.getTime() - a.getTime())[0];
-    const cooldownEndsAt = lastCompletion ? new Date(lastCompletion.getTime() + task.cooldownHours * 3600 * 1000) : null;
-    const isAvailable = completionsToday < task.maxPerDay && (!cooldownEndsAt || cooldownEndsAt <= new Date());
-    return { ...task, completionsToday, isAvailable, cooldownEndsAt: cooldownEndsAt?.toISOString() ?? null };
-  });
+  if (!process.env.YOUTUBE_API_KEY) return;
 
-  return { tasks: tasksWithStatus, totalTasksToday, dailyLimit: DAILY_TASK_LIMIT };
+  try {
+    await refreshVideos(5);
+    lastRefreshedDate = today;
+  } catch (err) {
+    console.error("[daily-videos] Auto-refresh failed:", err);
+  }
+}
+
+export async function getTasks(userId: string) {
+  await ensureDailyVideos();
+
+  const todayStart = startOfDay(new Date());
+
+  const [videos, watches, completedToday] = await Promise.all([
+    db.video.findMany({ where: { isActive: true }, take: 5 }),
+    db.videoWatch.findMany({
+      where: { userId },
+      select: { videoId: true, percentWatched: true, rewarded: true },
+    }),
+    db.taskCompletion.count({ where: { userId, completedAt: { gte: todayStart } } }),
+  ]);
+
+  const watchMap = new Map(watches.map((w) => [w.videoId, w]));
+
+  return {
+    videos: videos.map((v) => {
+      const w = watchMap.get(v.id);
+      return { ...v, percentWatched: w?.percentWatched ?? 0, isRewarded: w?.rewarded ?? false };
+    }),
+    completedToday,
+    dailyLimit: DAILY_TASK_LIMIT,
+    canEarnMore: completedToday < DAILY_TASK_LIMIT,
+  };
 }
 
 export async function completeTask(userId: string, taskId: string) {
@@ -91,6 +113,7 @@ export async function getVideos(userId: string) {
 }
 
 export async function recordVideoProgress(userId: string, videoId: string, watchedSeconds: number, percentWatched: number) {
+  const todayStart = startOfDay(new Date());
   const [video, membership] = await Promise.all([
     db.video.findUnique({ where: { id: videoId } }),
     db.membership.findUnique({ where: { userId } }),
@@ -109,6 +132,11 @@ export async function recordVideoProgress(userId: string, videoId: string, watch
   });
 
   if (percentWatched >= video.minWatchPercent) {
+    const completedToday = await db.taskCompletion.count({ where: { userId, completedAt: { gte: todayStart } } });
+    if (completedToday >= DAILY_TASK_LIMIT) {
+      return { rewarded: false, message: "Daily limit reached — come back tomorrow!" };
+    }
+
     const wallet = await db.wallet.findUnique({ where: { userId } });
     if (!wallet) return { rewarded: false, message: "Wallet not found" };
 

@@ -106,7 +106,7 @@ export interface ActivateMembershipResponse { membership: Membership; wallet: Wa
 export interface TransferRequest { recipientEmail: string; amount: number; note?: string }
 export interface TransferResponse { message: string; wallet: Wallet }
 
-export interface TasksResponse { tasks: TaskWithStatus[]; totalTasksToday: number; dailyLimit: number }
+export interface TasksResponse { videos: VideoWithProgress[]; completedToday: number; dailyLimit: number; canEarnMore: boolean }
 export interface CompleteTaskRequest { taskId: string }
 export interface CompleteTaskResponse { reward: number; totalTasksToday: number; message: string }
 export interface VideosResponse { videos: VideoWithProgress[] }

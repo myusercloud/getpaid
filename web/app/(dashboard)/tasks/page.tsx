@@ -100,11 +100,11 @@ export default function TasksPage() {
 }
 
 // ── VideoTaskCard ──────────────────────────────────────────────────────────
-// Plain <iframe> — React owns it entirely, no third-party DOM mutations.
-// Progress is tracked by a wall-clock timer: how long the video has been
-// open. This is the correct approach for an educational simulation —
-// actual playback position requires the YT Player API which conflicts
-// with React's reconciler and causes the "An error occurred" embed errors.
+// Plain <iframe> with enablejsapi=1 so YouTube broadcasts state changes via
+// postMessage. We listen on window, filter by e.source so multiple open cards
+// don't cross-talk, and only tick the timer when state === 1 (PLAYING).
+// This means the progress bar only advances while the video is actually playing —
+// pausing the video pauses the timer.
 
 function VideoTaskCard({
   index,
@@ -118,8 +118,11 @@ function VideoTaskCard({
   onComplete: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(video.percentWatched);
   const [rewarded, setRewarded] = useState(video.isRewarded);
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const elapsedRef = useRef(0);
 
@@ -141,8 +144,34 @@ function VideoTaskCard({
     },
   });
 
+  // Listen for YouTube postMessage state changes.
+  // e.source === iframeRef.current.contentWindow ensures we only react to
+  // events from THIS card's iframe, not other open cards on the page.
   useEffect(() => {
     if (!open || rewarded) return;
+
+    function handleMessage(e: MessageEvent) {
+      if (!e.origin.includes("youtube")) return;
+      if (e.source !== iframeRef.current?.contentWindow) return;
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        // onStateChange info: -1=unstarted 0=ended 1=playing 2=paused 3=buffering
+        if (data.event === "onStateChange") {
+          setIsPlaying(data.info === 1);
+        }
+      } catch {}
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      setIsPlaying(false);
+    };
+  }, [open, rewarded]);
+
+  // Timer only ticks while the video is in PLAYING state.
+  useEffect(() => {
+    if (!isPlaying || rewarded) return;
 
     timerRef.current = setInterval(() => {
       elapsedRef.current += 1;
@@ -154,14 +183,24 @@ function VideoTaskCard({
 
       if (elapsedRef.current >= secondsNeeded) {
         clearInterval(timerRef.current!);
+        timerRef.current = null;
         progressMutation.mutate(threshold);
       }
     }, 1000);
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     };
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isPlaying]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tell YouTube we're listening after the iframe loads — this opens the
+  // postMessage channel so state change events start flowing.
+  function handleIframeLoad() {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "listening" }),
+      "*",
+    );
+  }
 
   const secondsLeft = Math.max(secondsNeeded - elapsedRef.current, 0);
   const minLeft = Math.ceil(secondsLeft / 60);
@@ -222,10 +261,16 @@ function VideoTaskCard({
                 {open ? "▲ Minimize" : "▶ Watch to earn"}
               </button>
             )}
-            {open && !rewarded && (
-              <span className="text-xs text-gray-400 animate-pulse">
+            {open && !rewarded && isPlaying && (
+              <span className="text-xs text-green-600 animate-pulse">
                 ● {secondsLeft > 0 ? `${minLeft}m left` : "Claiming reward…"}
               </span>
+            )}
+            {open && !rewarded && !isPlaying && progress === 0 && (
+              <span className="text-xs text-gray-400">Press ▶ in the video to start</span>
+            )}
+            {open && !rewarded && !isPlaying && progress > 0 && (
+              <span className="text-xs text-gray-400">⏸ paused — resume to continue</span>
             )}
             {rewarded && (
               <span className="text-xs font-medium text-green-600">+{formatKES(video.reward)} earned</span>
@@ -251,14 +296,16 @@ function VideoTaskCard({
         </div>
       )}
 
-      {/* Video player */}
+      {/* Video player — enablejsapi=1 opens the postMessage channel */}
       {open && !rewarded && (
         <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-900">
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0&modestbranding=1`}
+            ref={iframeRef}
+            src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
             title={video.title}
             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            onLoad={handleIframeLoad}
             className="w-full h-full border-0"
           />
         </div>

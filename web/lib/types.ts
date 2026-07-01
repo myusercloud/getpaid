@@ -103,6 +103,8 @@ export interface MeResponse { user: User }
 
 export interface WalletResponse { wallet: Wallet; membership: Membership | null; transactions: Transaction[] }
 export interface ActivateMembershipResponse { membership: Membership; wallet: Wallet; message: string }
+export interface StkPushResponse { checkoutRequestId: string; message: string; simMode: boolean }
+export interface StkStatusResponse { status: "PENDING" | "SUCCESS" | "FAILED"; resultDesc: string | null }
 export interface TransferRequest { recipientEmail: string; amount: number; note?: string }
 export interface TransferResponse { message: string; wallet: Wallet }
 

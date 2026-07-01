@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 export const metadata: Metadata = {
   title: { default: "GETPAID", template: "%s | GETPAID" },
   description: "Educational fintech simulation platform. Learn how wallet systems, tasks, referrals, and rewards are built.",
+  icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

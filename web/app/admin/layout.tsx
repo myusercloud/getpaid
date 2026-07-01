@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuthStore } from "@/store/auth";
 
 const links = [
@@ -27,9 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-xs">GP</span>
-              </div>
+              <Image src="/logo.png" alt="GETPAID" width={28} height={28} className="rounded-md" />
               <span className="font-semibold text-gray-900">GETPAID</span>
             </Link>
             <span className="text-gray-300">|</span>

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
@@ -29,9 +30,7 @@ export function TopNav() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
-            <span className="text-white font-bold text-xs">GP</span>
-          </div>
+          <Image src="/logo.png" alt="GETPAID" width={28} height={28} className="rounded-md" />
           <span className="font-semibold text-gray-900">GETPAID</span>
         </Link>
 

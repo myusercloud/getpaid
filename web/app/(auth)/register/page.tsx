@@ -1,6 +1,7 @@
 "use client";
 import { useState, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User, Tag, ArrowRight } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
@@ -69,9 +70,7 @@ function RegisterForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-              <span className="text-white font-bold text-sm">GP</span>
-            </div>
+            <Image src="/logo.png" alt="GETPAID" width={40} height={40} className="rounded-xl shadow-lg shadow-blue-200" />
             <span className="text-xl font-bold text-gray-900">GETPAID</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Create your account</h1>

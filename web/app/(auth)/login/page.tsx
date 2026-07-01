@@ -133,7 +133,6 @@ function LoginForm() {
             Create one free
           </Link>
         </p>
-        <p className="text-center text-xs text-gray-400 mt-3">Educational simulation — no real money</p>
       </div>
     </div>
   );

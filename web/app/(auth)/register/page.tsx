@@ -7,26 +7,6 @@ import { Eye, EyeOff, Mail, Lock, User, Tag, ArrowRight } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import type { RegisterResponse } from "@/lib/types";
 
-function getPasswordStrength(p: string): number {
-  if (p.length === 0) return 0;
-  let s = 0;
-  if (p.length >= 8) s++;
-  if (p.length >= 12) s++;
-  if (/[A-Z]/.test(p)) s++;
-  if (/[0-9]/.test(p)) s++;
-  if (/[^A-Za-z0-9]/.test(p)) s++;
-  return s;
-}
-
-const strengthConfig = [
-  { label: "", color: "bg-gray-200" },
-  { label: "Very weak", color: "bg-red-400" },
-  { label: "Weak", color: "bg-orange-400" },
-  { label: "Fair", color: "bg-amber-400" },
-  { label: "Strong", color: "bg-green-400" },
-  { label: "Very strong", color: "bg-green-600" },
-];
-
 function RegisterForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -34,10 +14,6 @@ function RegisterForm() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [password, setPassword] = useState("");
-
-  const strength = getPasswordStrength(password);
-  const sc = strengthConfig[strength];
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -74,7 +50,7 @@ function RegisterForm() {
             <span className="text-xl font-bold text-gray-900">GETPAID</span>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-500 mt-1.5">Join the GETPAID simulation</p>
+          <p className="text-gray-500 mt-1.5">Join the GETPAID server</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm shadow-gray-100">
@@ -120,12 +96,10 @@ function RegisterForm() {
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="At least 8 characters"
+                  placeholder="Choose a strong password"
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-11 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
                 />
                 <button
@@ -138,21 +112,6 @@ function RegisterForm() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {password.length > 0 && (
-                <div className="space-y-1 pt-1">
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-1 flex-1 rounded-full transition-all duration-300 ${strength >= level ? sc.color : "bg-gray-200"}`}
-                      />
-                    ))}
-                  </div>
-                  <p className={`text-xs font-medium ${strength <= 1 ? "text-red-500" : strength <= 2 ? "text-orange-500" : strength <= 3 ? "text-amber-600" : "text-green-600"}`}>
-                    {sc.label}
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Confirm password */}
@@ -227,7 +186,7 @@ function RegisterForm() {
             Sign in
           </Link>
         </p>
-        <p className="text-center text-xs text-gray-400 mt-3">Educational simulation — no real money, no real financial services</p>
+        <p className="text-center text-xs text-gray-400 mt-3"></p>
       </div>
     </div>
   );

@@ -28,6 +28,23 @@ export default function DashboardPage() {
         <p className="text-sm text-gray-500 mt-0.5">Here&apos;s your overview</p>
       </div>
 
+      {!user?.phoneVerified && (
+        <Link href="/settings" className="block bg-blue-600 rounded-xl p-4 flex items-center gap-4 hover:bg-blue-700 transition-colors group">
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-white">Verify your phone number</p>
+            <p className="text-xs text-blue-100 mt-0.5">Required for withdrawals — takes less than a minute.</p>
+          </div>
+          <svg className="w-4 h-4 text-white/60 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      )}
+
       {!membership?.isActive && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
           <span className="text-amber-600 mt-0.5">⚠</span>

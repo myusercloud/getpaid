@@ -11,6 +11,8 @@ export interface User {
   role: Role;
   referralCode: string;
   isActive: boolean;
+  phone?: string | null;
+  phoneVerified?: boolean;
   createdAt: string;
 }
 

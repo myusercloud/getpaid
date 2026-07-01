@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatKES, formatDate, MEMBERSHIP_COST } from "@/lib/shared";
 import type { WalletResponse, ActivateMembershipResponse } from "@/lib/types";
@@ -30,21 +29,6 @@ export default function WalletPage() {
     },
   });
 
-  const [transferTo, setTransferTo] = useState("");
-  const [transferAmount, setTransferAmount] = useState("");
-  const [transferError, setTransferError] = useState("");
-  const [transferSuccess, setTransferSuccess] = useState("");
-
-  const transferMutation = useMutation({
-    mutationFn: (body: { recipientEmail: string; amount: number }) => api.post("/wallet/transfer", body),
-    onSuccess: () => {
-      setTransferSuccess(`Transferred ${formatKES(parseFloat(transferAmount))} to ${transferTo}`);
-      setTransferTo(""); setTransferAmount(""); setTransferError("");
-      qc.invalidateQueries({ queryKey: ["wallet"] });
-    },
-    onError: (err) => setTransferError(err instanceof ApiError ? err.message : "Transfer failed"),
-  });
-
   function handleActivateClick() {
     setSimStep("confirm");
   }
@@ -67,14 +51,6 @@ export default function WalletPage() {
   if (isLoading) return <WalletSkeleton />;
 
   const { wallet, membership, transactions } = data ?? {};
-
-  function handleTransfer(e: React.FormEvent) {
-    e.preventDefault();
-    setTransferError(""); setTransferSuccess("");
-    const amount = parseFloat(transferAmount);
-    if (isNaN(amount) || amount < 10) { setTransferError("Minimum transfer is KES 10"); return; }
-    transferMutation.mutate({ recipientEmail: transferTo, amount });
-  }
 
   return (
     <div className="space-y-6">
@@ -103,20 +79,6 @@ export default function WalletPage() {
           <Button onClick={handleActivateClick}>
             Activate for KES {MEMBERSHIP_COST}
           </Button>
-        </Card>
-      )}
-
-      {membership?.isActive && (
-        <Card>
-          <h2 className="text-base font-semibold text-gray-900 mb-4">Transfer Credits</h2>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-xs text-blue-700">Virtual credits only — no real money transferred.</div>
-          <form onSubmit={handleTransfer} className="space-y-3">
-            <Input label="Recipient email" value={transferTo} onChange={(e) => setTransferTo(e.target.value)} placeholder="user@example.com" type="email" required />
-            <Input label="Amount (KES)" value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)} placeholder="10" type="number" min="10" required />
-            {transferError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{transferError}</p>}
-            {transferSuccess && <p className="text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2">{transferSuccess}</p>}
-            <Button type="submit" loading={transferMutation.isPending}>Transfer</Button>
-          </form>
         </Card>
       )}
 

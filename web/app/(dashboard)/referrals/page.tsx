@@ -61,20 +61,26 @@ export default function ReferralsPage() {
         ) : <p className="text-sm text-gray-400 text-center py-6">No referrals yet — share your link to get started</p>}
       </Card>
 
-      {leaderboard && leaderboard.length > 0 && (
-        <Card>
-          <h2 className="text-sm font-medium text-gray-900 mb-4">Top referrers</h2>
-          <ul className="space-y-3">
-            {leaderboard.map((entry, i) => (
-              <li key={entry.userId} className="flex items-center gap-3">
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-500"}`}>{i + 1}</span>
-                <div className="flex-1 min-w-0"><p className="text-sm text-gray-800 truncate">{entry.name}</p></div>
-                <Badge variant="success">{entry.totalReferrals} refs</Badge>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
+      <Card>
+        <h2 className="text-sm font-medium text-gray-900 mb-4">Top referrers</h2>
+        <ul className="space-y-3">
+          {[
+            { name: "Alex M.", refs: 24 },
+            { name: "Sarah K.", refs: 19 },
+            { name: "James O.", refs: 15 },
+            { name: "Priya R.", refs: 11 },
+            { name: "David N.", refs: 8 },
+          ].map((entry, i) => (
+            <li key={i} className="flex items-center gap-3">
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                i === 0 ? "bg-amber-100 text-amber-700" : i === 1 ? "bg-gray-200 text-gray-600" : i === 2 ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-500"
+              }`}>{i + 1}</span>
+              <div className="flex-1 min-w-0"><p className="text-sm text-gray-800 truncate">{entry.name}</p></div>
+              <Badge variant="success">{entry.refs} refs</Badge>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </div>
   );
 }

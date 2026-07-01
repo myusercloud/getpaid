@@ -55,8 +55,13 @@ export function TopNav() {
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500 hidden sm:block truncate max-w-40">{user?.name}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5">
+            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-[10px]">{user?.name?.[0]?.toUpperCase()}</span>
+            </div>
+            <span className="text-sm font-medium text-gray-700 truncate max-w-28">{user?.name?.split(" ")[0]}</span>
+          </div>
           <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Sign out">
             <LogOut className="w-4 h-4" />
           </button>

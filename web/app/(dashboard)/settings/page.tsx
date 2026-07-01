@@ -168,7 +168,7 @@ function PhoneVerification({ phone, phoneVerified, onVerified }: { phone?: strin
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
               Verified
             </span>
-            <button onClick={() => setStage("idle") || setPhoneInput(phone.replace("+254", ""))} className="text-xs text-gray-400 hover:text-gray-600 underline">Change</button>
+            <button onClick={() => { setStage("idle"); setPhoneInput(phone.replace("+254", "")); }} className="text-xs text-gray-400 hover:text-gray-600 underline">Change</button>
           </div>
         </div>
       </Card>

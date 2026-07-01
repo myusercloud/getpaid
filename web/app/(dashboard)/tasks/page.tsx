@@ -43,27 +43,8 @@ export default function TasksPage() {
   if (isLoading) return <TasksSkeleton />;
 
   const { videos = [], completedToday = 0, dailyLimit = 5, canEarnMore = true } = data ?? {};
-  const membership = walletData?.membership;
-  const atLimit = completedToday >= dailyLimit;
-
-  if (!membership?.isActive) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Tasks</h1>
-        <Card className="text-center py-10">
-          <p className="text-lg font-medium text-gray-800 mb-2">Membership required</p>
-          <p className="text-sm text-gray-500 mb-4">
-            Activate your GETPAID membership to access tasks and earn virtual credits.
-          </p>
-          <Link href="/wallet">
-            <button className="bg-black text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-gray-800">
-              Activate membership
-            </button>
-          </Link>
-        </Card>
-      </div>
-    );
-  }
+  const isActivated = !!walletData?.membership?.isActive;
+  const atLimit = isActivated && completedToday >= dailyLimit;
 
   return (
     <div className="space-y-6">
@@ -72,21 +53,39 @@ export default function TasksPage() {
           <h1 className="text-2xl font-semibold text-gray-900">Today's Tasks</h1>
           <p className="text-sm text-gray-500 mt-0.5">Watch videos to earn virtual credits. New videos every day.</p>
         </div>
-        <Badge variant={atLimit ? "danger" : "default"}>
-          {completedToday}/{dailyLimit} done
-        </Badge>
+        {isActivated && (
+          <Badge variant={atLimit ? "danger" : "default"}>
+            {completedToday}/{dailyLimit} done
+          </Badge>
+        )}
       </div>
 
-      <Card className="p-4">
-        <Progress
-          value={(completedToday / dailyLimit) * 100}
-          label={
-            atLimit
-              ? "All tasks complete for today — come back tomorrow!"
-              : `${dailyLimit - completedToday} video${dailyLimit - completedToday === 1 ? "" : "s"} remaining`
-          }
-        />
-      </Card>
+      {!isActivated && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-blue-900">Activate to earn rewards</p>
+            <p className="text-xs text-blue-600 mt-0.5">You can watch all videos — rewards are unlocked after activation.</p>
+          </div>
+          <Link href="/wallet">
+            <button className="flex-shrink-0 bg-blue-600 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-blue-700">
+              Activate
+            </button>
+          </Link>
+        </div>
+      )}
+
+      {isActivated && (
+        <Card className="p-4">
+          <Progress
+            value={(completedToday / dailyLimit) * 100}
+            label={
+              atLimit
+                ? "All tasks complete for today — come back tomorrow!"
+                : `${dailyLimit - completedToday} video${dailyLimit - completedToday === 1 ? "" : "s"} remaining`
+            }
+          />
+        </Card>
+      )}
 
       {atLimit && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
@@ -106,6 +105,7 @@ export default function TasksPage() {
             key={video.id}
             index={i + 1}
             video={video}
+            isActivated={isActivated}
             canEarnMore={canEarnMore}
             onComplete={() => {
               qc.invalidateQueries({ queryKey: ["tasks"] });
@@ -121,16 +121,19 @@ export default function TasksPage() {
 function VideoTaskCard({
   index,
   video,
+  isActivated,
   canEarnMore,
   onComplete,
 }: {
   index: number;
   video: VideoWithProgress;
+  isActivated: boolean;
   canEarnMore: boolean;
   onComplete: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [rewarded, setRewarded] = useState(video.isRewarded);
+  const [watched, setWatched] = useState(false); // video ended, not yet activated
   const [embedError, setEmbedError] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -151,10 +154,6 @@ function VideoTaskCard({
     },
   });
 
-  // YT.Player injects its iframe INSIDE containerRef.current (a plain div).
-  // React only holds a ref to the div — it never touches the iframe, so
-  // there is no reconciliation conflict. No autoplay: user clicks play
-  // themselves. onStateChange fires when the video ends (state 0).
   useEffect(() => {
     if (!open || rewarded || !containerRef.current) return;
 
@@ -171,11 +170,16 @@ function VideoTaskCard({
         playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
         events: {
           onStateChange: ({ data }: { data: number }) => {
-            if (data === 0 && active) completeMutation.mutate();
+            if (data === 0 && active) {
+              if (isActivated) {
+                completeMutation.mutate();
+              } else {
+                setWatched(true);
+                setOpen(false);
+              }
+            }
           },
-          onError: () => {
-            if (active) setEmbedError(true);
-          },
+          onError: () => { if (active) setEmbedError(true); },
         },
       });
     });
@@ -187,13 +191,15 @@ function VideoTaskCard({
     };
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const canOpen = !rewarded && (!isActivated || canEarnMore);
+
   return (
     <Card>
       {/* Header */}
       <div className="flex items-start gap-3">
         <button
-          onClick={() => !rewarded && canEarnMore && setOpen((v) => !v)}
-          disabled={rewarded || !canEarnMore}
+          onClick={() => canOpen && setOpen((v) => !v)}
+          disabled={!canOpen}
           className="relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 disabled:cursor-default"
         >
           <Image
@@ -227,19 +233,19 @@ function VideoTaskCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">{video.title}</h3>
-            <Badge variant={rewarded ? "info" : "success"} className="flex-shrink-0 whitespace-nowrap">
-              {rewarded ? "✓ Done" : `+${formatKES(video.reward)}`}
+            <Badge variant={rewarded ? "info" : isActivated ? "success" : "secondary"} className="flex-shrink-0 whitespace-nowrap">
+              {rewarded ? "✓ Done" : isActivated ? `+${formatKES(video.reward)}` : `🔒 +${formatKES(video.reward)}`}
             </Badge>
           </div>
 
           <div className="flex items-center gap-3 mt-2">
-            {!rewarded && canEarnMore && (
+            {canOpen && (
               <button onClick={() => setOpen((v) => !v)} className="text-xs font-medium text-blue-600 hover:text-blue-700">
-                {open ? "▲ Minimize" : "▶ Watch to earn"}
+                {open ? "▲ Minimize" : isActivated ? "▶ Watch to earn" : "▶ Watch"}
               </button>
             )}
             {rewarded && <span className="text-xs font-medium text-green-600">+{formatKES(video.reward)} earned</span>}
-            {!canEarnMore && !rewarded && <span className="text-xs text-amber-600">daily limit reached</span>}
+            {isActivated && !canEarnMore && !rewarded && <span className="text-xs text-amber-600">daily limit reached</span>}
           </div>
         </div>
       </div>
@@ -260,13 +266,32 @@ function VideoTaskCard({
                 <div ref={containerRef} className="w-full h-full" />
               </div>
               <p className="mt-2 text-xs text-center text-gray-400">
-                {completeMutation.isPending ? "Crediting reward…" : `Watch the full video to earn +${formatKES(video.reward)}`}
+                {completeMutation.isPending
+                  ? "Crediting reward…"
+                  : isActivated
+                  ? `Watch the full video to earn +${formatKES(video.reward)}`
+                  : "Watch the full video — activate your account to claim the reward"}
               </p>
             </>
           )}
         </div>
       )}
 
+      {/* Activate prompt — shown after an unactivated user finishes a video */}
+      {watched && !rewarded && !open && (
+        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-blue-900">
+            Activate your account to claim +{formatKES(video.reward)}
+          </p>
+          <Link href="/wallet">
+            <button className="flex-shrink-0 bg-blue-600 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-blue-700">
+              Activate
+            </button>
+          </Link>
+        </div>
+      )}
+
+      {/* Reward banner — activated users only */}
       {rewarded && (
         <div className="mt-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
           <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

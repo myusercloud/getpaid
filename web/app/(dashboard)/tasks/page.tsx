@@ -1,6 +1,6 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/card";
@@ -112,6 +112,7 @@ function VideoTaskCard({
 }) {
   const [open, setOpen] = useState(false);
   const [rewarded, setRewarded] = useState(video.isRewarded);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const completeMutation = useMutation({
     mutationFn: () =>
@@ -127,6 +128,33 @@ function VideoTaskCard({
       }
     },
   });
+
+  // Reward fires when YouTube sends state 0 (video ended).
+  // Filter by e.source so multiple open cards don't cross-trigger.
+  useEffect(() => {
+    if (!open || rewarded) return;
+
+    function handleMessage(e: MessageEvent) {
+      if (!e.origin.includes("youtube")) return;
+      if (e.source !== iframeRef.current?.contentWindow) return;
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (data.event === "onStateChange" && data.info === 0) {
+          completeMutation.mutate();
+        }
+      } catch {}
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [open, rewarded]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleIframeLoad() {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "listening" }),
+      "*",
+    );
+  }
 
   return (
     <Card>
@@ -196,27 +224,24 @@ function VideoTaskCard({
 
       {/* Video player */}
       {open && !rewarded && (
-        <>
-          <div className="mt-3 aspect-video rounded-xl overflow-hidden bg-gray-900">
+        <div className="mt-3">
+          <div className="aspect-video rounded-xl overflow-hidden bg-gray-900">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0&modestbranding=1`}
+              ref={iframeRef}
+              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
               title={video.title}
               allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              onLoad={handleIframeLoad}
               className="w-full h-full border-0"
             />
           </div>
-          <button
-            onClick={() => completeMutation.mutate()}
-            disabled={completeMutation.isPending}
-            className="mt-3 w-full py-2.5 rounded-xl bg-black text-white text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {completeMutation.isPending ? "Claiming…" : `Mark as watched · +${formatKES(video.reward)}`}
-          </button>
-          {completeMutation.isError && (
-            <p className="mt-1.5 text-xs text-red-600 text-center">Something went wrong — try again.</p>
-          )}
-        </>
+          <p className="mt-2 text-xs text-center text-gray-400">
+            {completeMutation.isPending
+              ? "Crediting reward…"
+              : `Watch the full video to earn +${formatKES(video.reward)}`}
+          </p>
+        </div>
       )}
 
       {/* Reward banner */}

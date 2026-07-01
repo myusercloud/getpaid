@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { db } from "../../lib/db";
 import { MEMBERSHIP_COST, MEMBERSHIP_BONUS } from "../../lib/constants";
-import { mpesaConfigured, stkPush, type MpesaCallbackBody } from "../../lib/mpesa";
+import { intasendConfigured, initiateStkPush, type IntaSendCallback } from "../../lib/intasend";
 
 // ─── In-memory simulation store (no-MPESA dev mode) ────────────────────────
 const simStore = new Map<string, { userId: string; status: "PENDING" | "SUCCESS" | "FAILED" }>();
@@ -108,7 +108,7 @@ export async function initiateSTKPush(userId: string, phone: string) {
 
   const formatted = formatPhone(phone);
 
-  if (!mpesaConfigured()) {
+  if (!intasendConfigured()) {
     // Simulation mode — auto-succeed after 5 s
     const fakeId = `sim_${nanoid(16)}`;
     simStore.set(fakeId, { userId, status: "PENDING" });
@@ -127,13 +127,17 @@ export async function initiateSTKPush(userId: string, phone: string) {
     };
   }
 
-  const result = await stkPush(formatted, MEMBERSHIP_COST, `GP-${userId.slice(0, 8).toUpperCase()}`);
+  const result = await initiateStkPush(
+    formatted,
+    MEMBERSHIP_COST,
+    `GP-${userId.slice(0, 8).toUpperCase()}`
+  );
 
   await db.mpesaPayment.create({
     data: {
       userId,
-      checkoutRequestId: result.CheckoutRequestID,
-      merchantRequestId: result.MerchantRequestID,
+      checkoutRequestId: result.invoice.invoice_id,
+      merchantRequestId: result.invoice.invoice_id,
       phone: formatted,
       amount: MEMBERSHIP_COST,
       status: "PENDING",
@@ -141,24 +145,23 @@ export async function initiateSTKPush(userId: string, phone: string) {
   });
 
   return {
-    checkoutRequestId: result.CheckoutRequestID,
-    message: result.CustomerMessage,
+    checkoutRequestId: result.invoice.invoice_id,
+    message: "STK push sent. Check your phone and enter your M-Pesa PIN.",
     simMode: false,
   };
 }
 
-export async function handleMpesaCallback(body: MpesaCallbackBody) {
-  const { stkCallback } = body.Body;
-  const { CheckoutRequestID, ResultCode, ResultDesc } = stkCallback;
+export async function handleIntaSendCallback(body: IntaSendCallback) {
+  const { invoice_id, state, failed_reason } = body;
 
-  const payment = await db.mpesaPayment.findUnique({ where: { checkoutRequestId: CheckoutRequestID } });
-  if (!payment) return; // unknown payment — ignore
+  const payment = await db.mpesaPayment.findUnique({ where: { checkoutRequestId: invoice_id } });
+  if (!payment) return; // unknown invoice — ignore
 
-  const status = ResultCode === 0 ? "SUCCESS" : "FAILED";
+  const status = state === "COMPLETE" ? "SUCCESS" : state === "FAILED" ? "FAILED" : "PENDING";
 
   await db.mpesaPayment.update({
     where: { id: payment.id },
-    data: { status, resultCode: ResultCode, resultDesc: ResultDesc },
+    data: { status, resultDesc: failed_reason },
   });
 
   if (status === "SUCCESS") {

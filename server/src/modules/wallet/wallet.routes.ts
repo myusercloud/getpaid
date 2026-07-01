@@ -6,10 +6,10 @@ import {
   activateMembership,
   transferCredits,
   initiateSTKPush,
-  handleMpesaCallback,
+  handleIntaSendCallback,
   getPaymentStatus,
 } from "./wallet.service";
-import type { MpesaCallbackBody } from "../../lib/mpesa";
+import type { IntaSendCallback } from "../../lib/intasend";
 
 export async function walletRoutes(app: FastifyInstance) {
   app.get("/", { preHandler: [authenticate] }, async (req, reply) => {
@@ -17,7 +17,7 @@ export async function walletRoutes(app: FastifyInstance) {
     reply.send(await getWallet(id));
   });
 
-  // Legacy direct activation (kept for admin/testing)
+  // Legacy direct activation (admin/testing)
   app.post("/activate-membership", { preHandler: [authenticate] }, async (req, reply) => {
     const { id } = req.user as { id: string };
     reply.send(await activateMembership(id));
@@ -35,7 +35,7 @@ export async function walletRoutes(app: FastifyInstance) {
     reply.send(await transferCredits(id, body.data.recipientEmail, body.data.amount, body.data.note));
   });
 
-  // ── STK Push ───────────────────────────────────────────────────────────────
+  // ── STK Push (IntaSend) ────────────────────────────────────────────────────
   app.post("/stk-push", { preHandler: [authenticate] }, async (req, reply) => {
     const schema = z.object({ phone: z.string().min(9).max(13) });
     const body = schema.safeParse(req.body);
@@ -44,17 +44,17 @@ export async function walletRoutes(app: FastifyInstance) {
     reply.send(await initiateSTKPush(id, body.data.phone));
   });
 
-  // Safaricom callback — no auth (Safaricom calls this directly)
-  app.post("/mpesa/callback", async (req, reply) => {
+  // IntaSend webhook — no auth (IntaSend POSTs here on payment state change)
+  app.post("/intasend/callback", async (req, reply) => {
     try {
-      await handleMpesaCallback(req.body as MpesaCallbackBody);
+      await handleIntaSendCallback(req.body as IntaSendCallback);
     } catch {
-      // Never fail the callback — Safaricom will retry
+      // Never return an error — IntaSend will retry otherwise
     }
-    reply.send({ ResultCode: 0, ResultDesc: "Accepted" });
+    reply.send({ status: "ok" });
   });
 
-  // Frontend polls this to know when payment is confirmed
+  // Frontend polls this to detect payment confirmation
   app.get("/mpesa/status/:checkoutRequestId", { preHandler: [authenticate] }, async (req, reply) => {
     const { id } = req.user as { id: string };
     const { checkoutRequestId } = req.params as { checkoutRequestId: string };

@@ -10,6 +10,25 @@ import { formatKES } from "@/lib/shared";
 import Link from "next/link";
 import type { TasksResponse, VideoProgressResponse, WalletResponse, VideoWithProgress } from "@/lib/types";
 
+// ── YT IFrame API singleton ────────────────────────────────────────────────
+const ytCallbacks: Array<() => void> = [];
+let ytReady = false;
+let ytLoading = false;
+
+function onYTReady(cb: () => void) {
+  if (ytReady) { cb(); return; }
+  ytCallbacks.push(cb);
+  if (ytLoading) return;
+  ytLoading = true;
+  const tag = document.createElement("script");
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+  (window as any).onYouTubeIframeAPIReady = () => {
+    ytReady = true;
+    ytCallbacks.splice(0).forEach((fn) => fn());
+  };
+}
+
 export default function TasksPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -112,7 +131,10 @@ function VideoTaskCard({
 }) {
   const [open, setOpen] = useState(false);
   const [rewarded, setRewarded] = useState(video.isRewarded);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [embedError, setEmbedError] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
 
   const completeMutation = useMutation({
     mutationFn: () =>
@@ -129,38 +151,46 @@ function VideoTaskCard({
     },
   });
 
-  // Reward fires when YouTube sends state 0 (video ended).
-  // Filter by e.source so multiple open cards don't cross-trigger.
+  // YT.Player injects its iframe INSIDE containerRef.current (a plain div).
+  // React only holds a ref to the div — it never touches the iframe, so
+  // there is no reconciliation conflict. No autoplay: user clicks play
+  // themselves. onStateChange fires when the video ends (state 0).
   useEffect(() => {
-    if (!open || rewarded) return;
+    if (!open || rewarded || !containerRef.current) return;
 
-    function handleMessage(e: MessageEvent) {
-      if (!e.origin.includes("youtube")) return;
-      if (e.source !== iframeRef.current?.contentWindow) return;
-      try {
-        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-        if (data.event === "onStateChange" && data.info === 0) {
-          completeMutation.mutate();
-        }
-      } catch {}
-    }
+    let active = true;
+    setEmbedError(false);
 
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [open, rewarded]); // eslint-disable-line react-hooks/exhaustive-deps
+    onYTReady(() => {
+      if (!active || !containerRef.current) return;
 
-  function handleIframeLoad() {
-    iframeRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: "listening" }),
-      "*",
-    );
-  }
+      playerRef.current = new (window as any).YT.Player(containerRef.current, {
+        videoId: video.youtubeId,
+        width: "100%",
+        height: "100%",
+        playerVars: { rel: 0, modestbranding: 1, origin: window.location.origin },
+        events: {
+          onStateChange: ({ data }: { data: number }) => {
+            if (data === 0 && active) completeMutation.mutate();
+          },
+          onError: () => {
+            if (active) setEmbedError(true);
+          },
+        },
+      });
+    });
+
+    return () => {
+      active = false;
+      try { playerRef.current?.destroy?.(); } catch {}
+      playerRef.current = null;
+    };
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Card>
       {/* Header */}
       <div className="flex items-start gap-3">
-        {/* Thumbnail */}
         <button
           onClick={() => !rewarded && canEarnMore && setOpen((v) => !v)}
           disabled={rewarded || !canEarnMore}
@@ -194,7 +224,6 @@ function VideoTaskCard({
           </span>
         </button>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">{video.title}</h3>
@@ -205,46 +234,39 @@ function VideoTaskCard({
 
           <div className="flex items-center gap-3 mt-2">
             {!rewarded && canEarnMore && (
-              <button
-                onClick={() => setOpen((v) => !v)}
-                className="text-xs font-medium text-blue-600 hover:text-blue-700"
-              >
+              <button onClick={() => setOpen((v) => !v)} className="text-xs font-medium text-blue-600 hover:text-blue-700">
                 {open ? "▲ Minimize" : "▶ Watch to earn"}
               </button>
             )}
-            {rewarded && (
-              <span className="text-xs font-medium text-green-600">+{formatKES(video.reward)} earned</span>
-            )}
-            {!canEarnMore && !rewarded && (
-              <span className="text-xs text-amber-600">daily limit reached</span>
-            )}
+            {rewarded && <span className="text-xs font-medium text-green-600">+{formatKES(video.reward)} earned</span>}
+            {!canEarnMore && !rewarded && <span className="text-xs text-amber-600">daily limit reached</span>}
           </div>
         </div>
       </div>
 
-      {/* Video player */}
+      {/* Player */}
       {open && !rewarded && (
         <div className="mt-3">
-          <div className="aspect-video rounded-xl overflow-hidden bg-gray-900">
-            <iframe
-              ref={iframeRef}
-              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?enablejsapi=1&rel=0&modestbranding=1`}
-              title={video.title}
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              onLoad={handleIframeLoad}
-              className="w-full h-full border-0"
-            />
-          </div>
-          <p className="mt-2 text-xs text-center text-gray-400">
-            {completeMutation.isPending
-              ? "Crediting reward…"
-              : `Watch the full video to earn +${formatKES(video.reward)}`}
-          </p>
+          {embedError ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+              This video can't be embedded.{" "}
+              <a href={`https://www.youtube.com/watch?v=${video.youtubeId}`} target="_blank" rel="noopener noreferrer" className="font-medium underline">
+                Watch on YouTube →
+              </a>
+            </div>
+          ) : (
+            <>
+              <div className="aspect-video rounded-xl overflow-hidden bg-gray-900">
+                <div ref={containerRef} className="w-full h-full" />
+              </div>
+              <p className="mt-2 text-xs text-center text-gray-400">
+                {completeMutation.isPending ? "Crediting reward…" : `Watch the full video to earn +${formatKES(video.reward)}`}
+              </p>
+            </>
+          )}
         </div>
       )}
 
-      {/* Reward banner */}
       {rewarded && (
         <div className="mt-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
           <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

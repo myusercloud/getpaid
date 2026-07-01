@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { fetchRandomYouTubeVideos } from "./youtube";
 
-export async function refreshVideos(count = 5) {
+export async function refreshVideos(count = 15) {
   const videos = await fetchRandomYouTubeVideos(count);
 
   await db.video.updateMany({ where: { isActive: true }, data: { isActive: false } });

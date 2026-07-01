@@ -14,7 +14,7 @@ async function ensureDailyVideos(): Promise<void> {
   const dayStart = startOfDay(new Date());
   const count = await db.video.count({ where: { isActive: true, updatedAt: { gte: dayStart } } });
 
-  if (count >= 5) {
+  if (count >= 15) {
     lastRefreshedDate = today;
     return;
   }
@@ -22,7 +22,7 @@ async function ensureDailyVideos(): Promise<void> {
   if (!process.env.YOUTUBE_API_KEY) return;
 
   try {
-    await refreshVideos(5);
+    await refreshVideos(15);
     lastRefreshedDate = today;
   } catch (err) {
     console.error("[daily-videos] Auto-refresh failed:", err);

@@ -39,7 +39,7 @@ async function checkApi(res: Response, label: string) {
   }
 }
 
-export async function fetchRandomYouTubeVideos(count = 5): Promise<YTVideo[]> {
+export async function fetchRandomYouTubeVideos(count = 15): Promise<YTVideo[]> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) throw new Error("YOUTUBE_API_KEY is not configured");
 
@@ -56,7 +56,7 @@ export async function fetchRandomYouTubeVideos(count = 5): Promise<YTVideo[]> {
     videoDuration: "medium",       // 4–20 min — good for educational content
     relevanceLanguage: "en",
     safeSearch: "strict",
-    maxResults: "25",
+    maxResults: "50",
     key: apiKey,
   });
 

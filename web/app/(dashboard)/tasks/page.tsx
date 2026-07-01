@@ -313,7 +313,7 @@ function TasksSkeleton() {
       <div className="h-4 bg-gray-200 rounded w-60" />
       <div className="h-16 bg-gray-200 rounded-xl" />
       <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div key={i} className="h-28 bg-gray-200 rounded-xl" />
         ))}
       </div>

@@ -5,7 +5,7 @@ const db = new PrismaClient();
 
 async function main() {
   console.log("Fetching videos from YouTube API…");
-  const videos = await fetchRandomYouTubeVideos(5);
+  const videos = await fetchRandomYouTubeVideos(15);
   console.log(`Got ${videos.length} embeddable videos:`);
   videos.forEach((v) => console.log(`  • ${v.youtubeId} — ${v.title} (${Math.round(v.duration / 60)}m)`));
 

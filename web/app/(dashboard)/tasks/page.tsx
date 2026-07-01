@@ -233,9 +233,11 @@ function VideoTaskCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">{video.title}</h3>
-            <Badge variant={rewarded ? "info" : isActivated ? "success" : "secondary"} className="flex-shrink-0 whitespace-nowrap">
-              {rewarded ? "✓ Done" : isActivated ? `+${formatKES(video.reward)}` : `🔒 +${formatKES(video.reward)}`}
-            </Badge>
+            {(rewarded || isActivated) && (
+              <Badge variant={rewarded ? "info" : "success"} className="flex-shrink-0 whitespace-nowrap">
+                {rewarded ? "✓ Done" : `+${formatKES(video.reward)}`}
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center gap-3 mt-2">

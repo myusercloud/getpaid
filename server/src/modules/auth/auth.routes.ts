@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { registerSchema, loginSchema } from "./auth.schema";
-import { registerUser, loginUser, getMe, updateMe, requestPhoneOtp, verifyPhoneOtp } from "./auth.service";
+import { registerUser, loginUser, getMe, updateMe } from "./auth.service";
 import { authenticate } from "../../middleware/auth";
 
 export async function authRoutes(app: FastifyInstance) {
@@ -47,19 +47,4 @@ export async function authRoutes(app: FastifyInstance) {
     reply.send({ user: await updateMe(id, body.data.name) });
   });
 
-  app.post("/me/phone/request", { preHandler: [authenticate] }, async (req, reply) => {
-    const schema = z.object({ phone: z.string().min(9).max(15) });
-    const body = schema.safeParse(req.body);
-    if (!body.success) return reply.code(400).send({ error: body.error.errors[0].message, statusCode: 400 });
-    const { id } = req.user as { id: string };
-    reply.send(await requestPhoneOtp(id, body.data.phone));
-  });
-
-  app.post("/me/phone/verify", { preHandler: [authenticate] }, async (req, reply) => {
-    const schema = z.object({ otp: z.string().length(6) });
-    const body = schema.safeParse(req.body);
-    if (!body.success) return reply.code(400).send({ error: body.error.errors[0].message, statusCode: 400 });
-    const { id } = req.user as { id: string };
-    reply.send({ user: await verifyPhoneOtp(id, body.data.otp) });
-  });
 }

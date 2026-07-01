@@ -6,43 +6,7 @@ import type { RegisterInput, LoginInput } from "./auth.schema";
 const userSelect = {
   id: true, name: true, email: true, role: true,
   referralCode: true, isActive: true, createdAt: true,
-  phone: true, phoneVerified: true,
 } as const;
-
-// In-memory OTP store — keyed by userId
-const otpStore = new Map<string, { otp: string; phone: string; expiresAt: Date }>();
-
-export async function requestPhoneOtp(userId: string, phone: string) {
-  const normalized = phone.replace(/\s+/g, "");
-  const existing = await db.user.findFirst({ where: { phone: normalized, NOT: { id: userId } } });
-  if (existing) throw Object.assign(new Error("Phone number already in use"), { statusCode: 409 });
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-  otpStore.set(userId, { otp, phone: normalized, expiresAt });
-
-  // TODO: send real SMS via Africa's Talking / Twilio
-  console.log(`[OTP] ${normalized} → ${otp}`);
-
-  return { sent: true, devOtp: process.env.NODE_ENV !== "production" ? otp : undefined };
-}
-
-export async function verifyPhoneOtp(userId: string, otp: string) {
-  const entry = otpStore.get(userId);
-  if (!entry) throw Object.assign(new Error("No OTP requested — please request a new code"), { statusCode: 400 });
-  if (new Date() > entry.expiresAt) {
-    otpStore.delete(userId);
-    throw Object.assign(new Error("OTP expired — please request a new code"), { statusCode: 400 });
-  }
-  if (entry.otp !== otp) throw Object.assign(new Error("Incorrect code"), { statusCode: 400 });
-
-  otpStore.delete(userId);
-  return db.user.update({
-    where: { id: userId },
-    data: { phone: entry.phone, phoneVerified: true },
-    select: userSelect,
-  });
-}
 
 export async function registerUser(input: RegisterInput) {
   const existing = await db.user.findUnique({ where: { email: input.email } });

@@ -1,14 +1,16 @@
+// Sandbox:    https://sandbox.intasend.com
+// Production: https://api.intasend.com
 const BASE = process.env.INTASEND_IS_SANDBOX === "false"
-  ? "https://payment.intasend.com"
+  ? "https://api.intasend.com"
   : "https://sandbox.intasend.com";
 
 export function intasendConfigured() {
   return !!(process.env.INTASEND_SECRET_KEY);
 }
 
-function headers() {
+function authHeaders() {
   return {
-    Authorization: `Bearer ${process.env.INTASEND_SECRET_KEY}`,
+    Authorization: `Token ${process.env.INTASEND_SECRET_KEY}`,
     "Content-Type": "application/json",
   };
 }
@@ -32,18 +34,20 @@ export async function initiateStkPush(
 ): Promise<StkPushResult> {
   const res = await fetch(`${BASE}/api/v1/payment/mpesa-stk-push/`, {
     method: "POST",
-    headers: headers(),
+    headers: authHeaders(),
     body: JSON.stringify({ amount, phone_number: phone, api_ref: apiRef }),
   });
 
-  const data = await res.json() as StkPushResult & { detail?: string; errors?: unknown };
+  const data = await res.json() as Record<string, unknown>;
 
   if (!res.ok) {
-    const msg = (data as { detail?: string }).detail ?? "IntaSend STK push failed";
-    throw Object.assign(new Error(msg), { statusCode: res.status >= 500 ? 502 : 400 });
+    // Surface the actual IntaSend error for easier debugging
+    const detail = (data.detail ?? data.error ?? data.message ?? JSON.stringify(data)) as string;
+    console.error("[IntaSend] STK push failed:", res.status, data);
+    throw Object.assign(new Error(String(detail)), { statusCode: res.status >= 500 ? 502 : 400 });
   }
 
-  return data;
+  return data as unknown as StkPushResult;
 }
 
 export async function getInvoiceStatus(invoiceId: string): Promise<{
@@ -51,7 +55,7 @@ export async function getInvoiceStatus(invoiceId: string): Promise<{
   failed_reason: string | null;
 }> {
   const res = await fetch(`${BASE}/api/v1/payment/collection/?invoice_id=${invoiceId}`, {
-    headers: headers(),
+    headers: authHeaders(),
   });
   const data = await res.json() as { state: string; failed_reason?: string | null };
   return {
@@ -60,7 +64,6 @@ export async function getInvoiceStatus(invoiceId: string): Promise<{
   };
 }
 
-// Payload IntaSend POSTs to our callback URL
 export interface IntaSendCallback {
   invoice_id: string;
   state: "PENDING" | "PROCESSING" | "COMPLETE" | "FAILED";

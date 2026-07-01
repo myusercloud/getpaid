@@ -10,7 +10,7 @@ export function intasendConfigured() {
 
 function authHeaders() {
   return {
-    Authorization: `Token ${process.env.INTASEND_SECRET_KEY}`,
+    Authorization: `Bearer ${process.env.INTASEND_SECRET_KEY}`,
     "Content-Type": "application/json",
   };
 }

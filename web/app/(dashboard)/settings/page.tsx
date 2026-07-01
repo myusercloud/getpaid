@@ -88,9 +88,6 @@ export default function SettingsPage() {
         <Button variant="danger" loading={logoutMutation.isPending} onClick={() => logoutMutation.mutate()}>Sign out</Button>
       </Card>
 
-      <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-        <strong>Educational simulation:</strong> GETPAID demonstrates fintech platform architecture. All balances and transactions are virtual with no real monetary value.
-      </div>
     </div>
   );
 }

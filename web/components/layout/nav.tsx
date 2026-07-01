@@ -66,9 +66,6 @@ export function TopNav() {
           </button>
         </div>
       </div>
-      <div className="bg-amber-50 border-t border-amber-100 px-4 py-1">
-        <p className="text-xs text-amber-700 text-center">Educational simulation — all balances are virtual and have no real monetary value</p>
-      </div>
     </header>
   );
 }

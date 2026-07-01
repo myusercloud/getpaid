@@ -26,7 +26,7 @@ export default function ReferralsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Referrals</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Earn KES 50 virtual credits for each activated referral</p>
+        <p className="text-sm text-gray-500 mt-0.5">Earn KES 50 for each activated referral</p>
       </div>
 
       <Card>
@@ -36,9 +36,6 @@ export default function ReferralsPage() {
           <Button variant="outline" onClick={copyLink}>{copied ? "Copied!" : "Copy"}</Button>
         </div>
         <p className="text-xs text-gray-400 mt-2">Code: <strong className="font-mono text-gray-600">{data?.referralCode ?? user?.referralCode}</strong></p>
-        <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-700">Referral bonuses are virtual educational credits only. No real money is earned or paid.</p>
-        </div>
       </Card>
 
       <div className="grid grid-cols-3 gap-4">

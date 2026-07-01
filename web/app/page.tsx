@@ -18,47 +18,38 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Disclaimer */}
-      <div className="bg-amber-50 border-b border-amber-200">
-        <p className="max-w-5xl mx-auto px-4 py-2 text-xs text-amber-700 text-center">
-          Educational simulation only — All balances are virtual and have no real monetary value.
-        </p>
-      </div>
-
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-4 py-20 text-center">
-        <p className="text-sm font-medium text-blue-600 mb-4">Open-source fintech education</p>
+        <p className="text-sm font-medium text-blue-600 mb-4">Earn. Refer. Grow.</p>
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
           Learn how incentive platforms<br />are architected
         </h1>
         <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-          GETPAID is a hands-on simulation of a real fintech platform —
-          wallets, task rewards, referral systems, and transaction ledgers.
-          Strictly for educational purposes.
+          GETPAID is a fintech platform where you earn credits by completing tasks,
+          watching videos, and referring friends — all tracked in a real-time wallet.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/register" className="inline-flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
-            Start the simulation
+            Get started
           </Link>
           <Link href="/login" className="inline-flex items-center justify-center text-gray-700 border border-gray-300 hover:bg-gray-50 px-6 py-3 rounded-lg font-medium transition-colors">
             Sign in
           </Link>
         </div>
-        <p className="mt-4 text-xs text-gray-400">No real money. No real payments. Educational use only.</p>
       </section>
 
       {/* Features */}
       <section className="border-t border-gray-200 bg-gray-50">
         <div className="max-w-5xl mx-auto px-4 py-16">
-          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-12">What you&apos;ll learn to build</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 text-center mb-12">Everything in one platform</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: "Wallet Architecture", desc: "Virtual balance, transaction ledger, credit/debit flows, and pending rewards state." },
-              { title: "Task & Reward Engine", desc: "Configurable tasks with cooldowns, daily limits, completion tracking, and anti-abuse rules." },
-              { title: "Referral System", desc: "Unique referral codes, conversion tracking, conditional bonus payout on membership activation." },
-              { title: "Membership Onboarding", desc: "Single-tier simulated payment flow, activation bonus, and member status management." },
-              { title: "Video Rewards", desc: "YouTube embed with real progress tracking — reward gated at configurable watch threshold." },
-              { title: "Admin Panel", desc: "User management, task configuration, analytics dashboard, and reward controls." },
+              { title: "Wallet", desc: "Track your balance, transaction history, credit and debit flows, and pending rewards in real time." },
+              { title: "Task Rewards", desc: "Complete daily tasks with cooldowns and limits to earn credits straight to your wallet." },
+              { title: "Referral System", desc: "Share your unique referral link and earn KES 50 for every friend you activate." },
+              { title: "Membership", desc: "Activate your membership to unlock full earning potential and the activation bonus." },
+              { title: "Video Rewards", desc: "Watch YouTube videos and earn credits automatically when you reach the end." },
+              { title: "Admin Panel", desc: "Full control over users, tasks, videos, and platform analytics." },
             ].map(({ title, desc }) => (
               <div key={title} className="bg-white border border-gray-200 rounded-xl p-5">
                 <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
@@ -72,18 +63,18 @@ export default function HomePage() {
       {/* Membership */}
       <section className="max-w-sm mx-auto px-4 py-16 text-center">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">Membership</h2>
-        <p className="text-sm text-gray-500 mb-8">Educational simulation — no real payment processed.</p>
+        <p className="text-sm text-gray-500 mb-8">One-time activation. Start earning immediately.</p>
         <div className="bg-white border-2 border-blue-600 rounded-2xl p-8">
           <p className="text-sm font-medium text-blue-600 mb-1">GETPAID Member</p>
           <p className="text-4xl font-bold text-gray-900 mb-0.5">KES 150</p>
-          <p className="text-xs text-gray-400 mb-6">virtual credits · one-time</p>
+          <p className="text-xs text-gray-400 mb-6">one-time activation</p>
           <ul className="text-sm text-gray-700 space-y-2 text-left mb-6">
-            {["Up to 5 tasks per day","YouTube video rewards","Referral bonus (KES 50 per activation)","Virtual wallet & transfers","KES 20 activation bonus"].map((f) => (
+            {["Up to 5 tasks per day","YouTube video rewards","Referral bonus (KES 50 per activation)","Wallet & transaction history","KES 20 activation bonus"].map((f) => (
               <li key={f} className="flex items-center gap-2"><span className="text-blue-600">✓</span>{f}</li>
             ))}
           </ul>
           <Link href="/register" className="block w-full text-center text-white bg-blue-600 hover:bg-blue-700 px-4 py-2.5 rounded-lg font-medium transition-colors text-sm">
-            Start simulation
+            Get started
           </Link>
         </div>
       </section>
@@ -91,10 +82,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8 px-4 text-center">
         <p className="text-xs text-gray-400">
-          <strong className="text-amber-600">DISCLAIMER:</strong> GETPAID is an educational simulation platform.
-          All balances, rewards, and transactions are virtual with no real monetary value.
-        </p>
-        <p className="text-xs text-gray-400 mt-1">© 2026 GETPAID — For educational and portfolio purposes only.</p>
+          © 2026 GETPAID. All rights reserved.</p>
       </footer>
     </div>
   );

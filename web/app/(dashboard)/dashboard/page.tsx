@@ -25,7 +25,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Good day, {user?.name?.split(" ")[0]}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Here&apos;s your simulation overview</p>
+        <p className="text-sm text-gray-500 mt-0.5">Here&apos;s your overview</p>
       </div>
 
       {!membership?.isActive && (
@@ -33,7 +33,7 @@ export default function DashboardPage() {
           <span className="text-amber-600 mt-0.5">⚠</span>
           <div>
             <p className="text-sm font-medium text-amber-800">Membership not activated</p>
-            <p className="text-xs text-amber-600 mt-0.5">Activate your GETPAID membership (KES 150 virtual) to unlock tasks and video rewards.</p>
+            <p className="text-xs text-amber-600 mt-0.5">Activate your GETPAID membership (KES 150) to unlock tasks and video rewards.</p>
             <Link href="/wallet" className="text-xs font-medium text-amber-700 underline mt-1 inline-block">Activate now →</Link>
           </div>
         </div>

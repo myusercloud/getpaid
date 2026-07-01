@@ -51,7 +51,7 @@ export default function TasksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Today's Tasks</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Watch videos to earn virtual credits. New videos every day.</p>
+          <p className="text-sm text-gray-500 mt-0.5">Watch videos to earn credits. New videos every day.</p>
         </div>
         {isActivated && (
           <Badge variant={atLimit ? "danger" : "default"}>

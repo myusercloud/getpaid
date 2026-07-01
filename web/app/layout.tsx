@@ -4,7 +4,7 @@ import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: { default: "GETPAID", template: "%s | GETPAID" },
-  description: "Educational fintech simulation platform. Learn how wallet systems, tasks, referrals, and rewards are built.",
+  description: "Earn credits by watching videos, completing tasks, and referring friends. Track everything in your real-time wallet.",
   icons: { icon: "/logo.png", apple: "/logo.png" },
 };
 

@@ -17,13 +17,21 @@ export async function authRoutes(app: FastifyInstance) {
     if (!body.success) return reply.code(400).send({ error: body.error.errors[0].message, statusCode: 400 });
     const user = await loginUser(body.data);
     const token = app.jwt.sign({ id: user.id, email: user.email, role: user.role }, { expiresIn: "7d" });
+    const isProd = process.env.NODE_ENV === "production";
     reply
-      .setCookie("token", token, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 })
+      .setCookie("token", token, {
+        httpOnly: true,
+        sameSite: isProd ? "none" : "lax",
+        secure: isProd,
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      })
       .send({ user });
   });
 
   app.post("/logout", async (_req, reply) => {
-    reply.clearCookie("token", { path: "/" }).send({ message: "Logged out" });
+    const isProd = process.env.NODE_ENV === "production";
+    reply.clearCookie("token", { path: "/", sameSite: isProd ? "none" : "lax", secure: isProd }).send({ message: "Logged out" });
   });
 
   app.get("/me", { preHandler: [authenticate] }, async (req, reply) => {

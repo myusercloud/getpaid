@@ -50,8 +50,8 @@ export default function TasksPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Today's Tasks</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Watch videos to earn credits. New videos every day.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Today&apos;s Tasks</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Watch videos to earn credits. New videos every day.</p>
         </div>
         {isActivated && (
           <Badge variant={atLimit ? "danger" : "default"}>
@@ -61,13 +61,13 @@ export default function TasksPage() {
       </div>
 
       {!isActivated && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-blue-900">Activate to earn rewards</p>
-            <p className="text-xs text-blue-600 mt-0.5">You can watch all videos — rewards are unlocked after activation.</p>
+            <p className="text-sm font-medium text-sky-900">Activate to earn rewards</p>
+            <p className="text-xs text-sky-600 mt-0.5">You can watch all videos — rewards are unlocked after activation.</p>
           </div>
           <Link href="/wallet">
-            <button className="flex-shrink-0 bg-blue-600 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-blue-700">
+            <button className="flex-shrink-0 bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-sky-600 transition-colors">
               Activate
             </button>
           </Link>
@@ -88,14 +88,14 @@ export default function TasksPage() {
       )}
 
       {atLimit && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
-          You've completed all {dailyLimit} tasks for today. Your earnings have been credited to your wallet.
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700">
+          You&apos;ve completed all {dailyLimit} tasks for today. Your earnings have been credited to your wallet.
         </div>
       )}
 
       {videos.length === 0 && (
         <Card className="text-center py-10">
-          <p className="text-sm text-gray-500">No videos available right now. Check back soon.</p>
+          <p className="text-sm text-slate-500">No videos available right now. Check back soon.</p>
         </Card>
       )}
 
@@ -133,7 +133,7 @@ function VideoTaskCard({
 }) {
   const [open, setOpen] = useState(false);
   const [rewarded, setRewarded] = useState(video.isRewarded);
-  const [watched, setWatched] = useState(false); // video ended, not yet activated
+  const [watched, setWatched] = useState(false);
   const [embedError, setEmbedError] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -195,12 +195,11 @@ function VideoTaskCard({
 
   return (
     <Card>
-      {/* Header */}
       <div className="flex items-start gap-3">
         <button
           onClick={() => canOpen && setOpen((v) => !v)}
           disabled={!canOpen}
-          className="relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 disabled:cursor-default"
+          className="relative w-24 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-900 disabled:cursor-default"
         >
           <Image
             src={video.thumbnail ?? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
@@ -219,7 +218,7 @@ function VideoTaskCard({
             </span>
           )}
           {rewarded && (
-            <span className="absolute inset-0 flex items-center justify-center bg-green-600/80">
+            <span className="absolute inset-0 flex items-center justify-center bg-emerald-600/80">
               <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -232,7 +231,7 @@ function VideoTaskCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">{video.title}</h3>
+            <h3 className="text-sm font-medium text-slate-900 leading-snug line-clamp-2">{video.title}</h3>
             {(rewarded || isActivated) && (
               <Badge variant={rewarded ? "info" : "success"} className="flex-shrink-0 whitespace-nowrap">
                 {rewarded ? "✓ Done" : `+${formatKES(video.reward)}`}
@@ -242,32 +241,31 @@ function VideoTaskCard({
 
           <div className="flex items-center gap-3 mt-2">
             {canOpen && (
-              <button onClick={() => setOpen((v) => !v)} className="text-xs font-medium text-blue-600 hover:text-blue-700">
+              <button onClick={() => setOpen((v) => !v)} className="text-xs font-medium text-sky-600 hover:text-sky-700">
                 {open ? "▲ Minimize" : isActivated ? "▶ Watch to earn" : "▶ Watch"}
               </button>
             )}
-            {rewarded && <span className="text-xs font-medium text-green-600">+{formatKES(video.reward)} earned</span>}
+            {rewarded && <span className="text-xs font-medium text-emerald-600">+{formatKES(video.reward)} earned</span>}
             {isActivated && !canEarnMore && !rewarded && <span className="text-xs text-amber-600">daily limit reached</span>}
           </div>
         </div>
       </div>
 
-      {/* Player */}
       {open && !rewarded && (
         <div className="mt-3">
           {embedError ? (
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
-              This video can't be embedded.{" "}
+              This video can&apos;t be embedded.{" "}
               <a href={`https://www.youtube.com/watch?v=${video.youtubeId}`} target="_blank" rel="noopener noreferrer" className="font-medium underline">
                 Watch on YouTube →
               </a>
             </div>
           ) : (
             <>
-              <div className="aspect-video rounded-xl overflow-hidden bg-gray-900">
+              <div className="aspect-video rounded-xl overflow-hidden bg-slate-900">
                 <div ref={containerRef} className="w-full h-full" />
               </div>
-              <p className="mt-2 text-xs text-center text-gray-400">
+              <p className="mt-2 text-xs text-center text-slate-400">
                 {completeMutation.isPending
                   ? "Crediting reward…"
                   : isActivated
@@ -279,27 +277,25 @@ function VideoTaskCard({
         </div>
       )}
 
-      {/* Activate prompt — shown after an unactivated user finishes a video */}
       {watched && !rewarded && !open && (
-        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
-          <p className="text-sm font-medium text-blue-900">
+        <div className="mt-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-sky-900">
             Activate your account to claim +{formatKES(video.reward)}
           </p>
           <Link href="/wallet">
-            <button className="flex-shrink-0 bg-blue-600 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-blue-700">
+            <button className="flex-shrink-0 bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-sky-600 transition-colors">
               Activate
             </button>
           </Link>
         </div>
       )}
 
-      {/* Reward banner — activated users only */}
       {rewarded && (
-        <div className="mt-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
-          <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
+          <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
-          <p className="text-sm font-medium text-green-700">+{formatKES(video.reward)} credited to your wallet</p>
+          <p className="text-sm font-medium text-emerald-700">+{formatKES(video.reward)} credited to your wallet</p>
         </div>
       )}
     </Card>
@@ -309,12 +305,12 @@ function VideoTaskCard({
 function TasksSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="h-8 bg-gray-200 rounded w-40" />
-      <div className="h-4 bg-gray-200 rounded w-60" />
-      <div className="h-16 bg-gray-200 rounded-xl" />
+      <div className="h-8 bg-slate-200 rounded w-40" />
+      <div className="h-4 bg-slate-200 rounded w-60" />
+      <div className="h-16 bg-slate-200 rounded-2xl" />
       <div className="space-y-4">
         {[...Array(15)].map((_, i) => (
-          <div key={i} className="h-28 bg-gray-200 rounded-xl" />
+          <div key={i} className="h-28 bg-slate-200 rounded-2xl" />
         ))}
       </div>
     </div>

@@ -10,20 +10,25 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Input({ label, error, hint, className, id, ...props }: InputProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-");
   return (
-    <div className="space-y-1">
-      {label && <label htmlFor={inputId} className="block text-sm font-medium text-gray-700">{label}</label>}
+    <div className="space-y-1.5">
+      {label && (
+        <label htmlFor={inputId} className="block text-sm font-medium text-slate-700">
+          {label}
+        </label>
+      )}
       <input
         id={inputId}
         className={cn(
-          "block w-full px-3 py-2 border rounded-lg text-sm text-gray-900 placeholder-gray-400",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-          "disabled:bg-gray-50 disabled:text-gray-500",
-          error ? "border-red-400 bg-red-50" : "border-gray-300 bg-white",
+          "block w-full px-3 py-2.5 border rounded-xl text-sm text-slate-900 placeholder-slate-400 bg-white",
+          "transition-colors duration-150",
+          "focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500",
+          "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed",
+          error ? "border-red-400 bg-red-50" : "border-slate-300 hover:border-slate-400",
           className
         )}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-gray-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

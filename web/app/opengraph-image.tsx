@@ -62,9 +62,11 @@ export default function OgImage() {
           style={{ objectFit: "contain", marginBottom: 40 }}
         />
 
-        {/* Headline */}
+        {/* Headline — display:flex required by satori when mixing text + span */}
         <div
           style={{
+            display: "flex",
+            flexWrap: "wrap",
             fontSize: 62,
             fontWeight: 700,
             color: "#0f172a",
@@ -74,7 +76,7 @@ export default function OgImage() {
             maxWidth: 720,
           }}
         >
-          Complete tasks.{" "}
+          <span>Complete tasks.&nbsp;</span>
           <span style={{ color: "#0ea5e9" }}>Start earning.</span>
         </div>
 

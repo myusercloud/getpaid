@@ -42,9 +42,8 @@ function LoginForm() {
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <Image src="/logo.png" alt="GETPAID" width={40} height={40} className="rounded-xl shadow-md shadow-sky-100" />
-            <span className="text-xl font-bold text-slate-900 tracking-tight">GETPAID</span>
+          <Link href="/" className="inline-flex items-center mb-6">
+            <Image src="/logo-hero.png" alt="GETPAID" width={140} height={56} />
           </Link>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h1>
           <p className="text-slate-500 mt-1.5">Sign in to continue earning</p>

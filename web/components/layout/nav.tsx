@@ -30,9 +30,8 @@ export function TopNav() {
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
-        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-          <Image src="/logo.png" alt="GETPAID" width={26} height={26} className="rounded-lg" />
-          <span className="font-semibold text-slate-900 tracking-tight">GETPAID</span>
+        <Link href="/dashboard" className="flex items-center flex-shrink-0">
+          <Image src="/logo-hero.png" alt="GETPAID" width={100} height={40} />
         </Link>
 
         <nav className="hidden md:flex items-center h-14">

@@ -24,7 +24,7 @@ function HeroPreview() {
   return (
     <div className="relative">
       <div className="absolute -top-3 -right-3 z-10 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-        +KES 5 earned
+        +KES 200 earned
       </div>
       <div className="rounded-lg border border-slate-200 shadow-modal overflow-hidden bg-white">
         {/* Browser chrome */}
@@ -33,7 +33,7 @@ function HeroPreview() {
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 block flex-shrink-0" />
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block flex-shrink-0" />
           <div className="flex-1 ml-2 bg-white border border-slate-200 rounded text-[11px] text-slate-400 px-2 py-0.5 text-center font-mono truncate">
-            getpaid.app/dashboard
+            getpaid.com/dashboard
           </div>
         </div>
         {/* Dashboard preview content */}
@@ -46,8 +46,8 @@ function HeroPreview() {
           {/* Stat cards */}
           <div className="grid grid-cols-2 gap-2">
             {[
-              { label: "Balance",     value: "KES 340", sub: "KES",   accent: "border-l-sky-500" },
-              { label: "Tasks Today", value: "3 of 5",  sub: "limit", accent: "border-l-sky-500" },
+              { label: "Balance",     value: "KES 3400", sub: "KES",   accent: "border-l-sky-500" },
+              { label: "Tasks Today", value: "21 of 50",  sub: "limit", accent: "border-l-sky-500" },
             ].map(({ label, value, sub, accent }) => (
               <div key={label} className={`bg-white border border-slate-200 border-l-[3px] ${accent} rounded p-2`}>
                 <p className="text-[10px] text-slate-400 mb-1">{label}</p>
@@ -67,7 +67,7 @@ function HeroPreview() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-medium text-slate-900 truncate">Web3 for Beginners</p>
-              <p className="text-[10px] font-medium text-emerald-600 mt-0.5">&#10003; +KES 5 earned</p>
+              <p className="text-[10px] font-medium text-emerald-600 mt-0.5">&#10003; +KES 50 earned</p>
             </div>
           </div>
           {/* Pending task card */}
@@ -80,8 +80,8 @@ function HeroPreview() {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-slate-900 truncate">REST APIs with FastAPI</p>
-              <p className="text-[10px] text-sky-600 mt-0.5">&#9654; Watch to earn +KES 5</p>
+              <p className="text-[11px] font-medium text-slate-900 truncate">Referral Program</p>
+              <p className="text-[10px] text-sky-600 mt-0.5">&#9654; Watch to earn +KES 200</p>
             </div>
           </div>
         </div>

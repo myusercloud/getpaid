@@ -3,6 +3,18 @@ import { DAILY_TASK_LIMIT } from "../../lib/constants";
 import { refreshVideos } from "../../lib/videoRefresh";
 import { startOfDay, subHours } from "date-fns";
 
+// Single source of truth for task access. All handlers call this; no
+// second membership query elsewhere.
+export async function getTaskAccess(userId: string) {
+  const membership = await db.membership.findUnique({ where: { userId } });
+  const isActive = !!membership?.isActive;
+  return {
+    canAccessVideo:  true,      // watch is always open
+    canEarnVideo:    isActive,  // credit only if member
+    canAccessAiTask: isActive,  // view + attempt gated
+  };
+}
+
 // In-memory gate: prevents multiple refreshes within the same calendar day.
 // Resets on server restart, which is fine — the DB check below is the real guard.
 let lastRefreshedDate = "";
@@ -58,13 +70,13 @@ export async function getTasks(userId: string) {
 
 export async function completeTask(userId: string, taskId: string) {
   const todayStart = startOfDay(new Date());
-  const [task, membership] = await Promise.all([
+  const [task, access] = await Promise.all([
     db.task.findUnique({ where: { id: taskId } }),
-    db.membership.findUnique({ where: { userId } }),
+    getTaskAccess(userId),
   ]);
 
   if (!task?.isActive) throw Object.assign(new Error("Task not found"), { statusCode: 404 });
-  if (!membership?.isActive) throw Object.assign(new Error("Active membership required"), { statusCode: 403 });
+  if (!access.canEarnVideo) throw Object.assign(new Error("Active membership required"), { statusCode: 403 });
 
   const totalToday = await db.taskCompletion.count({ where: { userId, completedAt: { gte: todayStart }, taskId: { not: null } } });
   if (totalToday >= DAILY_TASK_LIMIT) {
@@ -114,13 +126,13 @@ export async function getVideos(userId: string) {
 
 export async function recordVideoProgress(userId: string, videoId: string, watchedSeconds: number, percentWatched: number) {
   const todayStart = startOfDay(new Date());
-  const [video, membership] = await Promise.all([
+  const [video, access] = await Promise.all([
     db.video.findUnique({ where: { id: videoId } }),
-    db.membership.findUnique({ where: { userId } }),
+    getTaskAccess(userId),
   ]);
 
   if (!video) throw Object.assign(new Error("Video not found"), { statusCode: 404 });
-  if (!membership?.isActive) throw Object.assign(new Error("Active membership required"), { statusCode: 403 });
+  if (!access.canEarnVideo) throw Object.assign(new Error("Active membership required"), { statusCode: 403 });
 
   const existing = await db.videoWatch.findUnique({ where: { userId_videoId: { userId, videoId } } });
   if (existing?.rewarded) return { rewarded: true, message: "Already rewarded" };

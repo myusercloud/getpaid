@@ -1,8 +1,46 @@
 // ─── Domain Models ──────────────────────────────────────────────────────────
 export type Role = "USER" | "ADMIN";
 export type TaskType = "DAILY_LOGIN" | "LIKE_POST" | "VIEW_CONTENT" | "QUIZ_COMPLETION" | "WATCH_VIDEO" | "CUSTOM";
-export type TransactionType = "MEMBERSHIP_ACTIVATION" | "TASK_REWARD" | "VIDEO_REWARD" | "REFERRAL_BONUS" | "TRANSFER_SENT" | "TRANSFER_RECEIVED" | "REGISTRATION_CREDIT";
+export type TransactionType = "MEMBERSHIP_ACTIVATION" | "TASK_REWARD" | "VIDEO_REWARD" | "AI_TASK_REWARD" | "REFERRAL_BONUS" | "TRANSFER_SENT" | "TRANSFER_RECEIVED" | "REGISTRATION_CREDIT";
 export type ReferralStatus = "PENDING" | "ACTIVE" | "REWARDED";
+export type AiTaskCategory = "RESPONSE_COMPARISON" | "DATA_ANNOTATION" | "TRANSCRIPTION" | "PROMPT_WRITING";
+export type AiTaskCompletionStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface AiTask {
+  id: string;
+  title: string;
+  description: string | null;
+  category: AiTaskCategory;
+  prompt: string;
+  rubric: string | null;
+  options: { a: string; b: string } | null;
+  reward: number;
+  isActive: boolean;
+}
+
+export interface AiTaskListItem {
+  id: string;
+  title: string;
+  description: string | null;
+  category: AiTaskCategory;
+  reward: number;
+  locked: boolean;
+  submissionStatus: AiTaskCompletionStatus | null;
+}
+
+export interface AiTaskCompletion {
+  id: string;
+  userId: string;
+  aiTaskId: string;
+  response: string;
+  status: AiTaskCompletionStatus;
+  reward: number;
+  reviewNote: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+  user: { id: string; name: string; email: string };
+  aiTask: { id: string; title: string; category: AiTaskCategory };
+}
 
 export interface User {
   id: string;
@@ -108,7 +146,7 @@ export interface StkStatusResponse { status: "PENDING" | "SUCCESS" | "FAILED"; r
 export interface TransferRequest { recipientEmail: string; amount: number; note?: string }
 export interface TransferResponse { message: string; wallet: Wallet }
 
-export interface TasksResponse { videos: VideoWithProgress[]; completedToday: number; dailyLimit: number; canEarnMore: boolean }
+export interface TasksResponse { videos: VideoWithProgress[]; aiTasks: AiTaskListItem[]; completedToday: number; dailyLimit: number; canEarnMore: boolean }
 export interface CompleteTaskRequest { taskId: string }
 export interface CompleteTaskResponse { reward: number; totalTasksToday: number; message: string }
 export interface VideosResponse { videos: VideoWithProgress[] }

@@ -46,26 +46,125 @@ export async function getTasks(userId: string) {
 
   const todayStart = startOfDay(new Date());
 
-  const [videos, watches, completedToday] = await Promise.all([
+  const [videos, watches, completedToday, access, aiTasks, aiCompletions] = await Promise.all([
     db.video.findMany({ where: { isActive: true }, take: 5 }),
     db.videoWatch.findMany({
       where: { userId },
       select: { videoId: true, percentWatched: true, rewarded: true },
     }),
     db.taskCompletion.count({ where: { userId, completedAt: { gte: todayStart } } }),
+    getTaskAccess(userId),
+    db.aiTask.findMany({ where: { isActive: true }, select: { id: true, title: true, description: true, category: true, reward: true } }),
+    db.aiTaskCompletion.findMany({ where: { userId }, select: { aiTaskId: true, status: true } }),
   ]);
 
   const watchMap = new Map(watches.map((w) => [w.videoId, w]));
+  const completionMap = new Map(aiCompletions.map((c) => [c.aiTaskId, c.status]));
 
   return {
     videos: videos.map((v) => {
       const w = watchMap.get(v.id);
       return { ...v, percentWatched: w?.percentWatched ?? 0, isRewarded: w?.rewarded ?? false };
     }),
+    aiTasks: aiTasks.map((t) => ({
+      ...t,
+      locked: !access.canAccessAiTask,
+      submissionStatus: completionMap.get(t.id) ?? null,
+    })),
     completedToday,
     dailyLimit: DAILY_TASK_LIMIT,
     canEarnMore: completedToday < DAILY_TASK_LIMIT,
   };
+}
+
+export async function getAiTask(userId: string, aiTaskId: string) {
+  const [task, access] = await Promise.all([
+    db.aiTask.findUnique({ where: { id: aiTaskId } }),
+    getTaskAccess(userId),
+  ]);
+
+  if (!task?.isActive) throw Object.assign(new Error("Task not found"), { statusCode: 404 });
+  if (!access.canAccessAiTask) throw Object.assign(new Error("Active membership required to access AI tasks"), { statusCode: 403 });
+
+  const completion = await db.aiTaskCompletion.findUnique({ where: { userId_aiTaskId: { userId, aiTaskId } } });
+  return { ...task, submissionStatus: completion?.status ?? null };
+}
+
+const MIN_RESPONSE_LENGTH = 30;
+
+export async function submitAiTask(userId: string, aiTaskId: string, response: string) {
+  if (!response || response.trim().length < MIN_RESPONSE_LENGTH) {
+    throw Object.assign(new Error(`Response must be at least ${MIN_RESPONSE_LENGTH} characters`), { statusCode: 400 });
+  }
+
+  const [task, access] = await Promise.all([
+    db.aiTask.findUnique({ where: { id: aiTaskId } }),
+    getTaskAccess(userId),
+  ]);
+
+  if (!task?.isActive) throw Object.assign(new Error("Task not found"), { statusCode: 404 });
+  if (!access.canAccessAiTask) throw Object.assign(new Error("Active membership required to access AI tasks"), { statusCode: 403 });
+
+  const existing = await db.aiTaskCompletion.findUnique({ where: { userId_aiTaskId: { userId, aiTaskId } } });
+  if (existing) throw Object.assign(new Error("You have already submitted this task"), { statusCode: 409 });
+
+  const completion = await db.aiTaskCompletion.create({
+    data: { userId, aiTaskId, response: response.trim(), reward: task.reward, status: "PENDING" },
+  });
+
+  return { id: completion.id, status: "PENDING", message: "Response submitted for review. Reward will be credited on approval." };
+}
+
+export async function approveAiTaskCompletion(completionId: string, reviewNote?: string) {
+  const completion = await db.aiTaskCompletion.findUnique({ where: { id: completionId }, include: { aiTask: true } });
+  if (!completion) throw Object.assign(new Error("Completion not found"), { statusCode: 404 });
+  if (completion.status !== "PENDING") throw Object.assign(new Error("Only PENDING submissions can be approved"), { statusCode: 409 });
+
+  const wallet = await db.wallet.findUnique({ where: { userId: completion.userId } });
+  if (!wallet) throw Object.assign(new Error("Wallet not found"), { statusCode: 404 });
+
+  await db.$transaction([
+    db.aiTaskCompletion.update({
+      where: { id: completionId },
+      data: { status: "APPROVED", reviewNote: reviewNote ?? null, reviewedAt: new Date() },
+    }),
+    db.wallet.update({
+      where: { userId: completion.userId },
+      data: {
+        virtualBalance: { increment: completion.reward },
+        totalEarned: { increment: completion.reward },
+        transactions: {
+          create: { type: "AI_TASK_REWARD", amount: completion.reward, description: `AI task approved: ${completion.aiTask.title}` },
+        },
+      },
+    }),
+  ]);
+
+  return { message: "Submission approved and reward credited" };
+}
+
+export async function rejectAiTaskCompletion(completionId: string, reviewNote?: string) {
+  const completion = await db.aiTaskCompletion.findUnique({ where: { id: completionId } });
+  if (!completion) throw Object.assign(new Error("Completion not found"), { statusCode: 404 });
+  if (completion.status !== "PENDING") throw Object.assign(new Error("Only PENDING submissions can be rejected"), { statusCode: 409 });
+
+  await db.aiTaskCompletion.update({
+    where: { id: completionId },
+    data: { status: "REJECTED", reviewNote: reviewNote ?? null, reviewedAt: new Date() },
+  });
+
+  return { message: "Submission rejected" };
+}
+
+export async function getPendingAiReviews() {
+  return db.aiTaskCompletion.findMany({
+    where: { status: "PENDING" },
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+      aiTask: { select: { id: true, title: true, category: true } },
+    },
+    orderBy: { submittedAt: "asc" },
+  });
 }
 
 export async function completeTask(userId: string, taskId: string) {

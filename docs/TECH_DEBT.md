@@ -3,7 +3,7 @@
 ## TD-001 — logo-hero.png: source file too large for web serving
 
 **File:** `web/public/logo-hero.png`  
-**Status:** Partially mitigated (resized 2026-07-02); outstanding work below.
+**Status:** Partially mitigated (resized 2026-07-02); LCP unconfirmed locally (see note); outstanding items below.
 
 ### Problem
 
@@ -44,6 +44,17 @@ before a public launch:
    WebP automatically. Confirm the Vercel project has image optimization enabled (not
    disabled via `unoptimized` prop or `images: { unoptimized: true }` in next.config).
    Current `next.config.ts` has no override — this should be fine, but worth a check.
+
+### LCP note (pre-promotion Lighthouse run, 2026-07-02)
+
+A second Lighthouse run was done on the exact commit being promoted to main, against a local
+production build on port 3002. LCP was still 4.0s, but the LCP element snippet was blank —
+meaning Lighthouse measured the auth redirect/loading state, not the landing page. Root cause:
+the backend is CORS-configured for `localhost:3000`; on port 3002 all API calls fail, so the
+app never renders app content. This is a test environment artifact, not a regression.
+
+The resize is still the correct fix. Impact on real LCP can only be confirmed on Vercel where
+CDN serves WebP at display size and the CORS configuration matches the actual origin.
 
 ### Priority
 

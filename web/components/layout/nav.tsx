@@ -31,7 +31,7 @@ export function TopNav() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
 
         <Link href="/dashboard" className="flex items-center flex-shrink-0">
-          <Image src="/logo-hero.png" alt="GETPAID" width={100} height={40} />
+          <Image src="/logo-hero.png" alt="GETPAID" width={100} height={40} priority />
         </Link>
 
         <nav className="hidden md:flex items-center h-14">

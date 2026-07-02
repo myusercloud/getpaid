@@ -32,7 +32,7 @@ export default function WalletPage() {
   const { wallet, membership, transactions } = data ?? {};
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Wallet</h1>
 
       {/* Balance card */}

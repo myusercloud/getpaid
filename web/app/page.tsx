@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Play, CheckSquare, Users, Wallet, Zap, BarChart2 } from "lucide-react";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 const features = [
   { icon: Play,        color: "sky",    title: "Video Rewards",    desc: "Watch YouTube videos and earn credits automatically when you reach the end." },
@@ -64,9 +65,8 @@ export default function HomePage() {
         {/* Stats divider */}
         <div className="flex items-center justify-center flex-wrap divide-x divide-slate-200">
           {[
-            { stat: "5",      label: "tasks per day" },
-            { stat: "KES 5",  label: "per video" },
-            { stat: "KES 50", label: "per referral" },
+            { stat: "Earn",  label: "per task" },
+            { stat: "Earn extra", label: "per referral" },
           ].map(({ stat, label }) => (
             <div key={label} className="px-8 first:pl-0 last:pr-0 text-center">
               <p className="text-xl font-bold text-slate-900">{stat}</p>
@@ -81,20 +81,19 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto px-4 py-16">
           <h2 className="text-2xl font-bold text-slate-900 text-center mb-2 tracking-tight">Everything in one platform</h2>
           <p className="text-slate-500 text-center mb-12 text-sm">Six ways to grow your balance — every session counts.</p>
-          <div className="grid md:grid-cols-3 gap-4">
+          <ScrollReveal stagger className="grid md:grid-cols-3 gap-4">
             {features.map(({ icon: Icon, color, title, desc }) => (
-              <div
-                key={title}
-                className="bg-white border border-slate-200 rounded-lg p-5 card-lift"
-              >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${iconColors[color]}`}>
-                  <Icon className="w-4 h-4" />
+              <div key={title}>
+                <div className="h-full bg-white border border-slate-200 rounded-lg p-5 card-lift">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${iconColors[color]}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-semibold text-slate-900 mb-1.5 text-sm tracking-tight">{title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-1.5 text-sm tracking-tight">{title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
               </div>
             ))}
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -104,6 +103,7 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">One membership, all access</h2>
           <p className="text-sm text-slate-500 mt-2">Activate once via M-Pesa. Start earning immediately.</p>
         </div>
+        <ScrollReveal>
         <div className="bg-white border-2 border-sky-500 rounded-lg p-7 shadow-card">
           <p className="text-xs font-semibold text-sky-600 uppercase tracking-wider mb-3">GETPAID Member</p>
           <div className="mb-5">
@@ -126,6 +126,7 @@ export default function HomePage() {
             Get started
           </Link>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* Footer */}

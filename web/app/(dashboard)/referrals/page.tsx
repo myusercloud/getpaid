@@ -23,7 +23,7 @@ export default function ReferralsPage() {
   const { stats, referrals } = data ?? {};
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Referrals</h1>
         <p className="text-sm text-slate-500 mt-0.5">Earn KES 50 for each activated referral</p>

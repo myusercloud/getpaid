@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatKES, formatDate, DAILY_TASK_LIMIT } from "@/lib/shared";
 import Link from "next/link";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import type { DashboardResponse } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -22,7 +23,7 @@ export default function DashboardPage() {
   const { wallet, membership, stats, recentActivity, notifications } = data ?? {};
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Good day, {user?.name?.split(" ")[0]}</h1>
         <p className="text-sm text-slate-500 mt-0.5">Here&apos;s your overview</p>
@@ -39,7 +40,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <ScrollReveal stagger className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Balance",      value: formatKES(wallet?.virtualBalance ?? 0), sub: "KES" },
           { label: "Tasks Today",  value: String(stats?.tasksCompletedToday ?? 0), sub: `of ${DAILY_TASK_LIMIT}` },
@@ -52,7 +53,7 @@ export default function DashboardPage() {
             <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
           </div>
         ))}
-      </div>
+      </ScrollReveal>
 
       <Card>
         <div className="flex items-center justify-between mb-3">

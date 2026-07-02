@@ -26,6 +26,7 @@ enum TransactionType {
   MEMBERSHIP_ACTIVATION
   TASK_REWARD
   VIDEO_REWARD
+  AI_TASK_REWARD
   REFERRAL_BONUS
   TRANSFER_SENT
   TRANSFER_RECEIVED
@@ -36,6 +37,19 @@ enum ReferralStatus {
   PENDING
   ACTIVE
   REWARDED
+}
+
+enum AiTaskCategory {
+  RESPONSE_COMPARISON
+  DATA_ANNOTATION
+  TRANSCRIPTION
+  PROMPT_WRITING
+}
+
+enum AiTaskCompletionStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -51,11 +65,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  wallet          Wallet?
-  membership      Membership?
-  taskCompletions TaskCompletion[]
-  videoWatches    VideoWatch[]
-  notifications   Notification[]
+  wallet              Wallet?
+  membership          Membership?
+  taskCompletions     TaskCompletion[]
+  videoWatches        VideoWatch[]
+  notifications       Notification[]
+  aiTaskCompletions   AiTaskCompletion[]
 
   referredBy    User?      @relation("ReferralTree", fields: [referredById], references: [id])
   referredUsers User[]     @relation("ReferralTree")
@@ -221,4 +236,41 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
+}
+
+model AiTask {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  category    AiTaskCategory
+  prompt      String
+  rubric      String?
+  options     Json?          // { a: string; b: string } for RESPONSE_COMPARISON
+  reward      Float
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  completions AiTaskCompletion[]
+
+  @@index([category, isActive])
+}
+
+model AiTaskCompletion {
+  id          String                 @id @default(cuid())
+  userId      String
+  aiTaskId    String
+  response    String
+  status      AiTaskCompletionStatus @default(PENDING)
+  reward      Float
+  reviewNote  String?
+  submittedAt DateTime               @default(now())
+  reviewedAt  DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiTask AiTask @relation(fields: [aiTaskId], references: [id])
+
+  @@unique([userId, aiTaskId])
+  @@index([userId, submittedAt])
+  @@index([status])
 }

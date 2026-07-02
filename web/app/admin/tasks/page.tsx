@@ -7,17 +7,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatKES } from "@/lib/shared";
-import type { Task, Video } from "@/lib/types";
+import type { Task, Video, AiTask, AiTaskCompletion } from "@/lib/types";
+
+const AI_CATEGORY_LABELS: Record<string, string> = {
+  RESPONSE_COMPARISON: "Response Comparison",
+  DATA_ANNOTATION: "Data Annotation",
+  TRANSCRIPTION: "Transcription",
+  PROMPT_WRITING: "Prompt Writing",
+};
 
 export default function AdminTasksPage() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"tasks" | "videos">("tasks");
+  const [tab, setTab] = useState<"tasks" | "videos" | "ai-tasks" | "ai-reviews">("tasks");
 
   const { data: tasks = [] } = useQuery({ queryKey: ["admin-tasks"], queryFn: () => api.get<Task[]>("/admin/tasks") });
   const { data: videos = [] } = useQuery({ queryKey: ["admin-videos"], queryFn: () => api.get<Video[]>("/admin/videos") });
+  const { data: aiTasks = [] } = useQuery({ queryKey: ["admin-ai-tasks"], queryFn: () => api.get<(AiTask & { _count: { completions: number } })[]>("/admin/ai-tasks") });
+  const { data: aiReviews = [] } = useQuery({ queryKey: ["admin-ai-reviews"], queryFn: () => api.get<AiTaskCompletion[]>("/admin/ai-reviews"), refetchInterval: 30_000 });
 
   const [taskError, setTaskError] = useState("");
   const [videoError, setVideoError] = useState("");
+  const [aiTaskError, setAiTaskError] = useState("");
 
   const createTaskMutation = useMutation({
     mutationFn: (body: object) => api.post("/admin/tasks", body),
@@ -29,6 +39,22 @@ export default function AdminTasksPage() {
     mutationFn: (body: object) => api.post("/admin/videos", body),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-videos"] }); setVideoError(""); },
     onError: (err) => setVideoError(err instanceof ApiError ? err.message : "Failed"),
+  });
+
+  const createAiTaskMutation = useMutation({
+    mutationFn: (body: object) => api.post("/admin/ai-tasks", body),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-ai-tasks"] }); setAiTaskError(""); },
+    onError: (err) => setAiTaskError(err instanceof ApiError ? err.message : "Failed"),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/admin/ai-reviews/${id}/approve`, {}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-ai-reviews"] }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/admin/ai-reviews/${id}/reject`, {}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-ai-reviews"] }),
   });
 
   function handleCreateTask(e: React.FormEvent<HTMLFormElement>) {
@@ -45,14 +71,42 @@ export default function AdminTasksPage() {
     (e.target as HTMLFormElement).reset();
   }
 
+  function handleCreateAiTask(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const category = f.get("category") as string;
+    const optionA = (f.get("optionA") as string).trim();
+    const optionB = (f.get("optionB") as string).trim();
+    const body: Record<string, unknown> = {
+      title: f.get("title"),
+      description: f.get("description") || undefined,
+      category,
+      prompt: f.get("prompt"),
+      rubric: f.get("rubric") || undefined,
+      reward: Number(f.get("reward")),
+    };
+    if (category === "RESPONSE_COMPARISON" && optionA && optionB) {
+      body.options = { a: optionA, b: optionB };
+    }
+    createAiTaskMutation.mutate(body);
+    (e.target as HTMLFormElement).reset();
+  }
+
+  const pendingCount = aiReviews.filter((r) => r.status === "PENDING").length;
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Tasks & Videos</h1>
 
-      <div className="flex gap-1 border-b border-slate-200">
-        {(["tasks", "videos"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === t ? "border-sky-500 text-sky-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}>
-            {t === "tasks" ? `Engagement Tasks (${tasks.length})` : `Video Tasks (${videos.length})`}
+      <div className="flex gap-1 border-b border-slate-200 overflow-x-auto">
+        {([
+          { key: "tasks", label: `Engagement (${tasks.length})` },
+          { key: "videos", label: `Videos (${videos.length})` },
+          { key: "ai-tasks", label: `AI Tasks (${aiTasks.length})` },
+          { key: "ai-reviews", label: `Reviews${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
+        ] as const).map(({ key, label }) => (
+          <button key={key} onClick={() => setTab(key)} className={`px-4 py-2 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${tab === key ? "border-sky-500 text-sky-600" : "border-transparent text-slate-500 hover:text-slate-700"}`}>
+            {label}
           </button>
         ))}
       </div>
@@ -137,6 +191,111 @@ export default function AdminTasksPage() {
               {videos.length === 0 && <p className="text-sm text-slate-400 text-center py-4">No videos yet</p>}
             </ul>
           </Card>
+        </div>
+      )}
+
+      {tab === "ai-tasks" && (
+        <div className="space-y-6">
+          <Card>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">Create AI Task</h2>
+            <form onSubmit={handleCreateAiTask} className="space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <Input label="Title" name="title" placeholder="Compare AI responses" required />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select name="category" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    {Object.entries(AI_CATEGORY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </div>
+                <Input label="Reward (KES)" name="reward" type="number" min="1" placeholder="5" required />
+                <Input label="Description (optional)" name="description" placeholder="Brief summary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Prompt / Task content</label>
+                <textarea name="prompt" rows={3} required className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="The task content shown to the worker…" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Rubric / Instructions (optional)</label>
+                <textarea name="rubric" rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Grading criteria or additional instructions…" />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Response A (RESPONSE_COMPARISON only)</label>
+                  <textarea name="optionA" rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="First AI response…" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Response B</label>
+                  <textarea name="optionB" rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Second AI response…" />
+                </div>
+              </div>
+              {aiTaskError && <p className="text-sm text-red-600">{aiTaskError}</p>}
+              <Button type="submit" loading={createAiTaskMutation.isPending}>Create AI task</Button>
+            </form>
+          </Card>
+          <Card>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">All AI Tasks</h2>
+            <ul className="divide-y divide-gray-100">
+              {aiTasks.map((task) => (
+                <li key={task.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className="text-sm font-medium text-gray-900">{task.title}</p>
+                      <Badge variant="secondary">{AI_CATEGORY_LABELS[task.category] ?? task.category}</Badge>
+                      <Badge variant="success">+{formatKES(task.reward)}</Badge>
+                      {!task.isActive && <Badge variant="danger">Inactive</Badge>}
+                    </div>
+                    <p className="text-xs text-gray-400">{(task as any)._count?.completions ?? 0} submissions</p>
+                  </div>
+                </li>
+              ))}
+              {aiTasks.length === 0 && <p className="text-sm text-gray-400 text-center py-4">No AI tasks yet</p>}
+            </ul>
+          </Card>
+        </div>
+      )}
+
+      {tab === "ai-reviews" && (
+        <div className="space-y-4">
+          {aiReviews.length === 0 ? (
+            <Card className="text-center py-10">
+              <p className="text-sm text-gray-400">No pending submissions</p>
+            </Card>
+          ) : (
+            aiReviews.map((review) => (
+              <Card key={review.id}>
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className="text-sm font-medium text-gray-900">{review.aiTask.title}</span>
+                      <Badge variant="secondary">{AI_CATEGORY_LABELS[review.aiTask.category] ?? review.aiTask.category}</Badge>
+                      <Badge variant="success">+{formatKES(review.reward)}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-500">{review.user.name} · {review.user.email}</p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => approveMutation.mutate(review.id)}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      className="bg-green-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => rejectMutation.mutate(review.id)}
+                      disabled={approveMutation.isPending || rejectMutation.isPending}
+                      className="bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Response</p>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap">{review.response}</p>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       )}
     </div>

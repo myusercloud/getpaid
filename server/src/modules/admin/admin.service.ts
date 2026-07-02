@@ -1,8 +1,10 @@
 import { db } from "../../lib/db";
 import { startOfDay } from "date-fns";
+import type { AiTaskCategory } from "@prisma/client";
 
 type CreateTaskInput = { title: string; description?: string; type: string; reward: number; cooldownHours: number; maxPerDay: number; contentUrl?: string };
 type CreateVideoInput = { title: string; description?: string; youtubeId: string; duration: number; minWatchPercent: number; reward: number; thumbnail?: string };
+type CreateAiTaskInput = { title: string; description?: string; category: AiTaskCategory; prompt: string; rubric?: string; options?: { a: string; b: string }; reward: number };
 
 export async function getAdminStats() {
   const today = startOfDay(new Date());
@@ -73,3 +75,18 @@ export async function updateVideo(id: string, data: Partial<CreateVideoInput & {
 }
 
 export { refreshVideos } from "../../lib/videoRefresh";
+
+export async function getAdminAiTasks() {
+  return db.aiTask.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { _count: { select: { completions: true } } },
+  });
+}
+
+export async function createAiTask(data: CreateAiTaskInput) {
+  return db.aiTask.create({ data: { ...data, options: data.options ?? undefined } });
+}
+
+export async function updateAiTask(id: string, data: Partial<CreateAiTaskInput & { isActive: boolean }>) {
+  return db.aiTask.update({ where: { id }, data });
+}

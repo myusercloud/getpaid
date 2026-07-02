@@ -32,28 +32,28 @@ export default function WalletPage() {
   const { wallet, membership, transactions } = data ?? {};
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900">Wallet</h1>
+    <div className="space-y-6 page-enter">
+      <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Wallet</h1>
 
       {/* Balance card */}
-      <div className="bg-blue-600 rounded-2xl p-6 text-white">
-        <p className="text-sm text-blue-200 mb-1">Balance</p>
-        <p className="text-4xl font-bold mb-0.5">{formatKES(wallet?.virtualBalance ?? 0)}</p>
-        <p className="text-xs text-blue-300">KES</p>
-        <div className="mt-4 pt-4 border-t border-blue-500 flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full ${membership?.isActive ? "bg-green-400" : "bg-amber-400"}`} />
-          <p className="text-sm text-blue-100">{membership?.isActive ? "GETPAID Member" : "Membership not activated"}</p>
+      <div className="bg-gradient-to-br from-sky-600 to-sky-700 rounded-lg p-6 text-white">
+        <p className="text-sm text-sky-200 mb-1">Balance</p>
+        <p className="text-4xl font-bold mb-0.5 tracking-tight">{formatKES(wallet?.virtualBalance ?? 0)}</p>
+        <p className="text-xs text-sky-300">KES</p>
+        <div className="mt-4 pt-4 border-t border-sky-500/50 flex items-center gap-3">
+          <div className={`w-2 h-2 rounded-full ${membership?.isActive ? "bg-emerald-400" : "bg-amber-400"}`} />
+          <p className="text-sm text-sky-100">{membership?.isActive ? "GETPAID Member" : "Membership not activated"}</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-slate-200">
         {(["overview", "withdraw"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-5 py-2.5 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-              tab === t ? "border-blue-600 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
+              tab === t ? "border-sky-500 text-sky-600" : "border-transparent text-slate-500 hover:text-slate-700"
             }`}
           >
             {t}
@@ -66,14 +66,14 @@ export default function WalletPage() {
           {!membership?.isActive && (
             <Card>
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-base font-semibold text-gray-900">Activate Membership</h2>
-                  <p className="text-sm text-gray-500 mt-0.5 mb-4">Pay KES {MEMBERSHIP_COST} via M-Pesa to unlock tasks and earn. You get a KES 20 bonus instantly.</p>
+                  <h2 className="text-base font-semibold text-slate-900">Activate Membership</h2>
+                  <p className="text-sm text-slate-500 mt-0.5 mb-4">Pay KES {MEMBERSHIP_COST} via M-Pesa to unlock tasks and earn. You get a KES 20 bonus instantly.</p>
                   <Button onClick={openActivate} className="bg-green-600 hover:bg-green-700">
                     Pay with M-Pesa — KES {MEMBERSHIP_COST}
                   </Button>
@@ -83,25 +83,25 @@ export default function WalletPage() {
           )}
 
           <Card>
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Transaction history</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-4">Transaction history</h2>
             {transactions && transactions.length > 0 ? (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-slate-100">
                 {transactions.map((tx) => (
                   <li key={tx.id} className="py-3 flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-800">{tx.description ?? tx.type}</p>
+                      <p className="text-sm text-slate-800">{tx.description ?? tx.type}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-gray-400">{formatDate(tx.createdAt)}</p>
+                        <p className="text-xs text-slate-400">{formatDate(tx.createdAt)}</p>
                         <Badge variant={tx.amount > 0 ? "success" : "danger"} className="text-xs px-1.5 py-0">{tx.type}</Badge>
                       </div>
                     </div>
-                    <span className={`text-sm font-semibold ${tx.amount > 0 ? "text-green-600" : "text-red-600"}`}>
+                    <span className={`text-sm font-semibold ${tx.amount > 0 ? "text-emerald-600" : "text-red-500"}`}>
                       {tx.amount > 0 ? "+" : ""}{formatKES(tx.amount)}
                     </span>
                   </li>
                 ))}
               </ul>
-            ) : <p className="text-sm text-gray-400 text-center py-6">No transactions yet</p>}
+            ) : <p className="text-sm text-slate-400 text-center py-6">No transactions yet</p>}
           </Card>
         </>
       )}
@@ -134,7 +134,6 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
-  // Phone vibrate every 4s while waiting
   useEffect(() => {
     if (stage !== "waiting") return;
     const id = setInterval(() => {
@@ -146,7 +145,6 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
     return () => clearInterval(id);
   }, [stage]);
 
-  // Countdown + polling
   function startPolling(id: string) {
     let secs = 60;
     setSecondsLeft(60);
@@ -205,17 +203,16 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-white w-full sm:max-w-sm rounded-t-xl sm:rounded-xl shadow-2xl overflow-hidden">
 
         {/* ── Phone input ── */}
         {stage === "phone" && (
           <div>
             <div className="bg-gradient-to-br from-green-500 to-green-700 px-6 pt-8 pb-10 text-white text-center relative overflow-hidden">
-              {/* decorative circles */}
               <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
               <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/5" />
               <div className="relative z-10">
-                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <div className="w-14 h-14 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
@@ -226,11 +223,11 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
             </div>
 
             <form onSubmit={handleSend} className="px-6 py-6 space-y-5 -mt-4">
-              <div className="bg-white rounded-2xl shadow-md p-5 space-y-4">
+              <div className="bg-white rounded-lg shadow-md p-5 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">M-Pesa Number</label>
-                  <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden focus-within:border-green-500 transition-colors">
-                    <span className="px-3 py-3 bg-gray-50 text-sm font-semibold text-gray-600 border-r border-gray-200 select-none">+254</span>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">M-Pesa Number</label>
+                  <div className="flex items-center border-2 border-slate-200 rounded-md overflow-hidden focus-within:border-green-500 transition-colors">
+                    <span className="px-3 py-3 bg-slate-50 text-sm font-semibold text-slate-600 border-r border-slate-200 select-none">+254</span>
                     <input
                       type="tel"
                       value={phone}
@@ -238,20 +235,20 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
                       placeholder="7XXXXXXXX"
                       required
                       pattern="\d{9}"
-                      className="flex-1 px-3 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none bg-white"
+                      className="flex-1 px-3 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none bg-white"
                       autoFocus
                     />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1.5">A payment prompt will be sent to this number</p>
+                  <p className="text-xs text-slate-400 mt-1.5">A payment prompt will be sent to this number</p>
                 </div>
 
-                <div className="bg-green-50 rounded-xl p-3 space-y-1.5">
+                <div className="bg-green-50 rounded-md p-3 space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Membership activation</span>
-                    <span className="font-semibold text-gray-900">KES {MEMBERSHIP_COST}</span>
+                    <span className="text-slate-500">Membership activation</span>
+                    <span className="font-semibold text-slate-900">KES {MEMBERSHIP_COST}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Bonus credited</span>
+                    <span className="text-slate-500">Bonus credited</span>
                     <span className="font-semibold text-green-600">+ KES 20</span>
                   </div>
                 </div>
@@ -260,14 +257,14 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               <button
                 type="submit"
                 disabled={phone.length !== 9}
-                className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-150 text-sm flex items-center justify-center gap-2"
+                className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-md transition-all duration-150 text-sm flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 Send STK Push
               </button>
-              <button type="button" onClick={onClose} className="w-full text-gray-400 hover:text-gray-600 text-sm py-1 transition-colors">
+              <button type="button" onClick={onClose} className="w-full text-slate-400 hover:text-slate-600 text-sm py-1 transition-colors">
                 Cancel
               </button>
             </form>
@@ -278,7 +275,6 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
         {stage === "pushing" && (
           <div className="px-6 py-12 flex flex-col items-center">
             <div className="relative w-24 h-24 mb-8">
-              {/* Signal rings */}
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
@@ -295,12 +291,11 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
-            {/* Animated signal bars */}
             <div className="flex items-end gap-1 mb-5">
               {[3, 5, 7, 9, 11].map((h, i) => (
                 <div
                   key={i}
-                  className="w-2 bg-green-500 rounded-sm origin-bottom"
+                  className="w-2 bg-green-500 rounded-[2px] origin-bottom"
                   style={{
                     height: `${h * 3}px`,
                     animation: `signal-rise 0.6s ease-out ${i * 0.12}s both`,
@@ -309,7 +304,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               ))}
             </div>
 
-            <p className="text-base font-semibold text-gray-800 mb-1">Sending to your phone</p>
+            <p className="text-base font-semibold text-slate-800 mb-1">Sending to your phone</p>
             <div className="flex items-center gap-1">
               {[0, 1, 2].map((i) => (
                 <div
@@ -325,7 +320,6 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
         {/* ── Waiting for PIN ── */}
         {stage === "waiting" && (
           <div className="px-6 py-8 flex flex-col items-center">
-            {/* Pulsing rings + phone */}
             <div className="relative w-32 h-32 mb-6">
               {[0, 1, 2].map((i) => (
                 <div
@@ -337,34 +331,32 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               <div
                 className={`absolute inset-0 flex items-center justify-center transition-transform ${isVibrating ? "animate-phone-vibrate" : ""}`}
               >
-                <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-200">
+                <div className="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center shadow-lg shadow-green-200">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                 </div>
-                {/* Notification badge */}
                 <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-badge-pop">
                   <span className="text-white text-xs font-bold">1</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-base font-bold text-gray-900 mb-1">Check your phone</p>
-            <p className="text-sm text-gray-500 text-center mb-1">
-              STK push sent to <strong className="text-gray-700">+254{phone}</strong>
+            <p className="text-base font-bold text-slate-900 mb-1">Check your phone</p>
+            <p className="text-sm text-slate-500 text-center mb-1">
+              STK push sent to <strong className="text-slate-700">+254{phone}</strong>
             </p>
-            <p className="text-sm text-gray-400 text-center mb-6">Enter your M-Pesa PIN to complete payment</p>
+            <p className="text-sm text-slate-400 text-center mb-6">Enter your M-Pesa PIN to complete payment</p>
 
             {simMode && (
-              <div className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-4 text-center">
+              <div className="w-full bg-amber-50 border border-amber-200 rounded-md px-4 py-2.5 mb-4 text-center">
                 <p className="text-xs text-amber-700 font-medium">Simulation mode — auto-completing in a moment</p>
               </div>
             )}
 
-            {/* Countdown circle */}
             <div className="relative w-16 h-16 mb-6">
               <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+                <circle cx="32" cy="32" r="28" fill="none" stroke="#e2e8f0" strokeWidth="4" />
                 <circle
                   cx="32" cy="32" r="28" fill="none"
                   stroke={secondsLeft > 20 ? "#16a34a" : secondsLeft > 10 ? "#d97706" : "#dc2626"}
@@ -376,7 +368,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`text-sm font-bold tabular-nums ${secondsLeft <= 10 ? "text-red-600" : "text-gray-700"}`}>
+                <span className={`text-sm font-bold tabular-nums ${secondsLeft <= 10 ? "text-red-600" : "text-slate-700"}`}>
                   {secondsLeft}
                 </span>
               </div>
@@ -388,7 +380,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               <Step n={3} text="Confirm payment of KES 150" done={false} />
             </div>
 
-            <button onClick={() => { clearTimers(); onClose(); }} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={() => { clearTimers(); onClose(); }} className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
               Cancel payment
             </button>
           </div>
@@ -407,15 +399,15 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <p className="text-lg font-bold text-gray-900 mb-1">Payment failed</p>
-            <p className="text-sm text-gray-500 text-center mb-6">{errorMsg}</p>
+            <p className="text-lg font-bold text-slate-900 mb-1">Payment failed</p>
+            <p className="text-sm text-slate-500 text-center mb-6">{errorMsg}</p>
             <button
               onClick={handleRetry}
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl text-sm transition-colors mb-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-md text-sm transition-colors mb-2"
             >
               Try again
             </button>
-            <button onClick={onClose} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={onClose} className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
               Cancel
             </button>
           </div>
@@ -425,7 +417,6 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// Animated success stage — kept in its own component to run mount animations cleanly
 function SuccessStage({ onClose, phone }: { onClose: () => void; phone: string }) {
   useEffect(() => {
     const t = setTimeout(onClose, 3200);
@@ -445,7 +436,6 @@ function SuccessStage({ onClose, phone }: { onClose: () => void; phone: string }
 
   return (
     <div className="px-6 py-12 flex flex-col items-center relative overflow-hidden">
-      {/* Confetti */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         {confettiItems.map((c, i) => (
           <div
@@ -461,7 +451,6 @@ function SuccessStage({ onClose, phone }: { onClose: () => void; phone: string }
         ))}
       </div>
 
-      {/* Check circle */}
       <div className="relative w-24 h-24 mb-6">
         <div className="w-24 h-24 bg-green-100 rounded-full animate-burst-scale" />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -481,12 +470,12 @@ function SuccessStage({ onClose, phone }: { onClose: () => void; phone: string }
       </div>
 
       <div className="text-center animate-slide-up-fade" style={{ animationDelay: "0.35s", opacity: 0 }}>
-        <p className="text-2xl font-bold text-gray-900">Payment confirmed!</p>
-        <p className="text-sm text-gray-500 mt-1">KES 150 · M-Pesa · +254{phone}</p>
+        <p className="text-2xl font-bold text-slate-900">Payment confirmed!</p>
+        <p className="text-sm text-slate-500 mt-1">KES 150 · M-Pesa · +254{phone}</p>
       </div>
 
       <div
-        className="mt-5 bg-green-50 border border-green-200 rounded-2xl px-6 py-4 text-center w-full animate-slide-up-fade"
+        className="mt-5 bg-green-50 border border-green-200 rounded-lg px-6 py-4 text-center w-full animate-slide-up-fade"
         style={{ animationDelay: "0.55s", opacity: 0 }}
       >
         <p className="text-base font-bold text-green-700">Welcome to GETPAID!</p>
@@ -499,14 +488,14 @@ function SuccessStage({ onClose, phone }: { onClose: () => void; phone: string }
 function Step({ n, text, done }: { n: number; text: string; done: boolean }) {
   return (
     <div className="flex items-center gap-3">
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold transition-all duration-500 ${done ? "bg-green-500 text-white" : "bg-gray-100 text-gray-400"}`}>
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold transition-all duration-500 ${done ? "bg-green-500 text-white" : "bg-slate-100 text-slate-400"}`}>
         {done ? (
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
         ) : n}
       </div>
-      <span className={`text-sm transition-colors duration-500 ${done ? "text-gray-800 font-medium" : "text-gray-400"}`}>{text}</span>
+      <span className={`text-sm transition-colors duration-500 ${done ? "text-slate-800 font-medium" : "text-slate-400"}`}>{text}</span>
     </div>
   );
 }
@@ -525,8 +514,8 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7" />
           </svg>
         </div>
-        <p className="text-sm font-medium text-gray-700">Activate your membership to withdraw</p>
-        <p className="text-xs text-gray-400 mt-1">Withdrawals are available to active members only.</p>
+        <p className="text-sm font-medium text-slate-700">Activate your membership to withdraw</p>
+        <p className="text-xs text-slate-400 mt-1">Withdrawals are available to active members only.</p>
       </Card>
     );
   }
@@ -534,14 +523,14 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
   if (submitted) {
     return (
       <Card className="text-center py-10">
-        <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="text-base font-semibold text-gray-900">Request received</p>
-        <p className="text-sm text-gray-500 mt-1">Processing withdrawal to <strong>+254{phone}</strong>.</p>
-        <button onClick={() => { setSubmitted(false); setPhone(""); setAmount(""); }} className="mt-5 text-sm text-blue-600 font-medium hover:underline">
+        <p className="text-base font-semibold text-slate-900">Request received</p>
+        <p className="text-sm text-slate-500 mt-1">Processing withdrawal to <strong>+254{phone}</strong>.</p>
+        <button onClick={() => { setSubmitted(false); setPhone(""); setAmount(""); }} className="mt-5 text-sm text-sky-600 font-medium hover:underline">
           Make another request
         </button>
       </Card>
@@ -550,13 +539,13 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
 
   return (
     <Card>
-      <h2 className="text-base font-semibold text-gray-900 mb-1">Withdraw</h2>
-      <p className="text-sm text-gray-500 mb-5">Enter your M-Pesa number to withdraw your earnings.</p>
+      <h2 className="text-base font-semibold text-slate-900 mb-1">Withdraw</h2>
+      <p className="text-sm text-slate-500 mb-5">Enter your M-Pesa number to withdraw your earnings.</p>
       <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-gray-700">M-Pesa phone number</label>
-          <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-            <span className="px-3 py-2.5 bg-gray-50 text-sm text-gray-500 font-medium border-r border-gray-300 select-none">+254</span>
+          <label className="block text-sm font-medium text-slate-700">M-Pesa phone number</label>
+          <div className="flex items-center border border-slate-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 transition-colors">
+            <span className="px-3 py-2.5 bg-slate-50 text-sm text-slate-500 font-medium border-r border-slate-300 select-none">+254</span>
             <input
               type="tel"
               value={phone}
@@ -564,12 +553,12 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
               placeholder="7XXXXXXXX"
               required
               pattern="\d{9}"
-              className="flex-1 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none"
+              className="flex-1 px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none"
             />
           </div>
         </div>
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-gray-700">Amount (KES)</label>
+          <label className="block text-sm font-medium text-slate-700">Amount (KES)</label>
           <input
             type="number"
             value={amount}
@@ -578,11 +567,11 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
             min="10"
             max={balance}
             required
-            className="block w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="block w-full px-4 py-2.5 border border-slate-300 rounded-md text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
           />
-          <p className="text-xs text-gray-400">Available: {formatKES(balance)}</p>
+          <p className="text-xs text-slate-400">Available: {formatKES(balance)}</p>
         </div>
-        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">
+        <button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-md transition-colors text-sm">
           Request withdrawal
         </button>
       </form>
@@ -593,10 +582,10 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
 function WalletSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="h-8 bg-gray-200 rounded w-32" />
-      <div className="h-36 bg-gray-200 rounded-2xl" />
-      <div className="h-40 bg-gray-200 rounded-xl" />
-      <div className="h-64 bg-gray-200 rounded-xl" />
+      <div className="h-8 bg-slate-200 rounded w-32" />
+      <div className="h-36 bg-slate-200 rounded-lg" />
+      <div className="h-40 bg-slate-200 rounded-lg" />
+      <div className="h-64 bg-slate-200 rounded-lg" />
     </div>
   );
 }

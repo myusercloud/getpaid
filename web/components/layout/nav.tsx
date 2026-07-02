@@ -9,10 +9,10 @@ import { LayoutDashboard, Wallet, CheckSquare, Users, Settings, LogOut, Shield }
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/wallet",    label: "Wallet",    icon: Wallet },
+  { href: "/tasks",     label: "Tasks",     icon: CheckSquare },
   { href: "/referrals", label: "Referrals", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings",  label: "Settings",  icon: Settings },
 ];
 
 export function TopNav() {
@@ -27,41 +27,63 @@ export function TopNav() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="GETPAID" width={28} height={28} className="rounded-md" />
-          <span className="font-semibold text-gray-900">GETPAID</span>
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+
+        <Link href="/dashboard" className="flex items-center flex-shrink-0">
+          <Image src="/logo-hero.png" alt="GETPAID" width={100} height={40} />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center h-14">
           {navLinks.map(({ href, label }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
             return (
-              <Link key={href} href={href}
-                className={cn("px-3 py-1.5 text-sm rounded-md transition-colors",
-                  active ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100")}>
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "relative px-3 h-full flex items-center text-sm transition-colors duration-150",
+                  active ? "text-sky-600 font-medium" : "text-slate-500 hover:text-slate-900"
+                )}
+              >
                 {label}
+                {active && (
+                  <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-sky-500 rounded-full" />
+                )}
               </Link>
             );
           })}
           {user?.role === "ADMIN" && (
-            <Link href="/admin"
-              className={cn("px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1",
-                pathname.startsWith("/admin") ? "bg-purple-50 text-purple-700 font-medium" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100")}>
-              <Shield className="w-3.5 h-3.5" />Admin
+            <Link
+              href="/admin"
+              className={cn(
+                "relative px-3 h-full flex items-center gap-1.5 text-sm transition-colors duration-150",
+                pathname.startsWith("/admin") ? "text-violet-600 font-medium" : "text-slate-500 hover:text-slate-900"
+              )}
+            >
+              <Shield className="w-3.5 h-3.5" />
+              Admin
+              {pathname.startsWith("/admin") && (
+                <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-violet-500 rounded-full" />
+              )}
             </Link>
           )}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5">
-            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-1.5">
+            <div className="w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-[10px]">{user?.name?.[0]?.toUpperCase()}</span>
             </div>
-            <span className="text-sm font-medium text-gray-700 truncate max-w-28">{user?.name?.split(" ")[0]}</span>
+            <span className="text-sm font-medium text-slate-700 truncate max-w-28">
+              {user?.name?.split(" ")[0]}
+            </span>
           </div>
-          <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Sign out">
+          <button
+            onClick={handleLogout}
+            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors duration-150"
+            title="Sign out"
+          >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
@@ -73,18 +95,25 @@ export function TopNav() {
 export function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 flex">
-      {navLinks.map(({ href, label, icon: Icon }) => {
-        const active = pathname === href || pathname.startsWith(href + "/");
-        return (
-          <Link key={href} href={href}
-            className={cn("flex-1 flex flex-col items-center py-2 gap-0.5 text-xs transition-colors",
-              active ? "text-blue-600" : "text-gray-500 hover:text-gray-800")}>
-            <Icon className="w-5 h-5" />
-            <span>{label}</span>
-          </Link>
-        );
-      })}
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200">
+      <div className="flex">
+        {navLinks.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(href + "/");
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex-1 flex flex-col items-center py-2.5 gap-0.5 text-[10px] font-medium transition-colors duration-150",
+                active ? "text-sky-600" : "text-slate-400 hover:text-slate-700"
+              )}
+            >
+              <Icon className="w-5 h-5" />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

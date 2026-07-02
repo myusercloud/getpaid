@@ -9,17 +9,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-300",
-  secondary: "bg-gray-100 text-gray-800 hover:bg-gray-200 active:bg-gray-300",
-  outline: "border border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100",
-  ghost: "text-gray-600 hover:bg-gray-100 hover:text-gray-900",
-  danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-red-300",
+  primary:   "bg-sky-500 text-white hover:bg-sky-600 active:bg-sky-700 disabled:bg-sky-300",
+  secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300",
+  outline:   "border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100",
+  ghost:     "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+  danger:    "bg-red-500 text-white hover:bg-red-600 active:bg-red-700 disabled:bg-red-300",
 };
 
 const sizes = {
   sm: "h-8 px-3 text-sm rounded-md",
-  md: "h-10 px-4 text-sm rounded-lg",
-  lg: "h-12 px-6 text-base rounded-lg",
+  md: "h-10 px-4 text-sm rounded-md",
+  lg: "h-12 px-6 text-base rounded-md",
 };
 
 export function Button({ variant = "primary", size = "md", loading, disabled, className, children, ...props }: ButtonProps) {
@@ -28,7 +28,9 @@ export function Button({ variant = "primary", size = "md", loading, disabled, cl
       {...props}
       disabled={disabled ?? loading}
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center gap-2 font-medium btn-micro",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2",
+        "disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],
         className

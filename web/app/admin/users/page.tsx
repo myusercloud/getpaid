@@ -17,7 +17,7 @@ export default function AdminUsersPage() {
   if (isLoading) return (
     <div className="space-y-4 animate-pulse">
       <div className="h-8 bg-slate-200 rounded w-24" />
-      {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-slate-200 rounded-2xl" />)}
+      {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-slate-200 rounded-lg" />)}
     </div>
   );
 

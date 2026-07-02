@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -61,13 +62,13 @@ export default function TasksPage() {
       </div>
 
       {!isActivated && (
-        <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex items-center justify-between gap-4">
+        <div className="bg-sky-50 border border-sky-200 rounded-lg p-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-sky-900">Activate to earn rewards</p>
             <p className="text-xs text-sky-600 mt-0.5">You can watch all videos — rewards are unlocked after activation.</p>
           </div>
           <Link href="/wallet">
-            <button className="flex-shrink-0 bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-sky-600 transition-colors">
+            <button className="flex-shrink-0 bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-md hover:bg-sky-600 transition-colors">
               Activate
             </button>
           </Link>
@@ -88,7 +89,7 @@ export default function TasksPage() {
       )}
 
       {atLimit && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-700">
           You&apos;ve completed all {dailyLimit} tasks for today. Your earnings have been credited to your wallet.
         </div>
       )}
@@ -194,12 +195,12 @@ function VideoTaskCard({
   const canOpen = !rewarded && (!isActivated || canEarnMore);
 
   return (
-    <Card>
+    <Card className={cn(rewarded ? "border-l-[3px] border-l-emerald-500" : "")}>
       <div className="flex items-start gap-3">
         <button
           onClick={() => canOpen && setOpen((v) => !v)}
           disabled={!canOpen}
-          className="relative w-24 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-900 disabled:cursor-default"
+          className="relative w-24 h-16 rounded-md overflow-hidden flex-shrink-0 bg-slate-900 disabled:cursor-default"
         >
           <Image
             src={video.thumbnail ?? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
@@ -254,7 +255,7 @@ function VideoTaskCard({
       {open && !rewarded && (
         <div className="mt-3">
           {embedError ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+            <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-3 text-sm text-amber-800">
               This video can&apos;t be embedded.{" "}
               <a href={`https://www.youtube.com/watch?v=${video.youtubeId}`} target="_blank" rel="noopener noreferrer" className="font-medium underline">
                 Watch on YouTube →
@@ -262,7 +263,7 @@ function VideoTaskCard({
             </div>
           ) : (
             <>
-              <div className="aspect-video rounded-xl overflow-hidden bg-slate-900">
+              <div className="aspect-video rounded-md overflow-hidden bg-slate-900">
                 <div ref={containerRef} className="w-full h-full" />
               </div>
               <p className="mt-2 text-xs text-center text-slate-400">
@@ -278,12 +279,12 @@ function VideoTaskCard({
       )}
 
       {watched && !rewarded && !open && (
-        <div className="mt-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+        <div className="mt-3 bg-sky-50 border border-sky-200 rounded-md px-4 py-3 flex items-center justify-between gap-3">
           <p className="text-sm font-medium text-sky-900">
             Activate your account to claim +{formatKES(video.reward)}
           </p>
           <Link href="/wallet">
-            <button className="flex-shrink-0 bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-xl hover:bg-sky-600 transition-colors">
+            <button className="flex-shrink-0 bg-sky-500 text-white text-xs font-medium px-4 py-2 rounded-md hover:bg-sky-600 transition-colors">
               Activate
             </button>
           </Link>
@@ -291,7 +292,7 @@ function VideoTaskCard({
       )}
 
       {rewarded && (
-        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
+        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-md px-4 py-3 flex items-center gap-2">
           <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
@@ -307,10 +308,10 @@ function TasksSkeleton() {
     <div className="space-y-6 animate-pulse">
       <div className="h-8 bg-slate-200 rounded w-40" />
       <div className="h-4 bg-slate-200 rounded w-60" />
-      <div className="h-16 bg-slate-200 rounded-2xl" />
+      <div className="h-16 bg-slate-200 rounded-lg" />
       <div className="space-y-4">
         {[...Array(15)].map((_, i) => (
-          <div key={i} className="h-28 bg-slate-200 rounded-2xl" />
+          <div key={i} className="h-28 bg-slate-200 rounded-lg" />
         ))}
       </div>
     </div>

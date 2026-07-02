@@ -3,6 +3,15 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./modules/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
+    borderRadius: {
+      none:    "0",
+      sm:      "6px",
+      DEFAULT: "10px",
+      md:      "10px",
+      lg:      "14px",
+      xl:      "20px",
+      full:    "9999px",
+    },
     extend: {
       fontFamily: {
         sans: ["var(--font-inter)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],

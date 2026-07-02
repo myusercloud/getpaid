@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <ul className="space-y-1">
               {links.map(({ href, label }) => (
                 <li key={href}>
-                  <Link href={href} className={`block px-3 py-2 rounded-xl text-sm font-medium transition-colors ${pathname === href ? "bg-sky-50 text-sky-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}>
+                  <Link href={href} className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === href ? "bg-sky-50 text-sky-700" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"}`}>
                     {label}
                   </Link>
                 </li>

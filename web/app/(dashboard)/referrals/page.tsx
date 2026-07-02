@@ -32,7 +32,7 @@ export default function ReferralsPage() {
       <Card>
         <h2 className="text-sm font-medium text-slate-900 mb-3">Your referral link</h2>
         <div className="flex gap-2">
-          <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 font-mono truncate">{referralLink}</div>
+          <div className="flex-1 bg-slate-50 border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-700 font-mono truncate">{referralLink}</div>
           <Button variant="outline" onClick={copyLink}>{copied ? "Copied!" : "Copy"}</Button>
         </div>
         <p className="text-xs text-slate-400 mt-2">Code: <strong className="font-mono text-slate-600">{data?.referralCode ?? user?.referralCode}</strong></p>
@@ -100,9 +100,9 @@ function ReferralsSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
       <div className="h-8 bg-slate-200 rounded w-32" />
-      <div className="h-24 bg-slate-200 rounded-2xl" />
-      <div className="grid grid-cols-3 gap-4">{[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-slate-200 rounded-2xl" />)}</div>
-      <div className="h-48 bg-slate-200 rounded-2xl" />
+      <div className="h-24 bg-slate-200 rounded-lg" />
+      <div className="grid grid-cols-3 gap-4">{[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-slate-200 rounded-lg" />)}</div>
+      <div className="h-48 bg-slate-200 rounded-lg" />
     </div>
   );
 }

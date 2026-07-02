@@ -29,7 +29,7 @@ export default function DashboardPage() {
       </div>
 
       {!membership?.isActive && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
           <span className="text-amber-600 mt-0.5 text-base">⚠</span>
           <div>
             <p className="text-sm font-medium text-amber-800">Membership not activated</p>
@@ -39,7 +39,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Stat cards with accent top border */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Balance",      value: formatKES(wallet?.virtualBalance ?? 0), sub: "KES" },
@@ -47,7 +46,7 @@ export default function DashboardPage() {
           { label: "Total Earned", value: formatKES(wallet?.totalEarned ?? 0),     sub: "KES" },
           { label: "Referrals",    value: String(stats?.totalReferrals ?? 0),       sub: "activated" },
         ].map(({ label, value, sub }) => (
-          <div key={label} className="bg-white border border-slate-200 border-t-2 border-t-sky-500 rounded-2xl shadow-card p-5 text-center">
+          <div key={label} className="bg-white border border-slate-200 border-l-[3px] border-l-sky-500 rounded-lg shadow-card p-5 text-center">
             <p className="text-xs text-slate-500 font-medium mb-1">{label}</p>
             <p className="text-2xl font-bold text-slate-900 tracking-tight">{value}</p>
             <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
@@ -117,12 +116,12 @@ function DashboardSkeleton() {
     <div className="space-y-6 animate-pulse">
       <div className="h-8 bg-slate-200 rounded w-48" />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-slate-200 rounded-2xl" />)}
+        {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-slate-200 rounded-lg" />)}
       </div>
-      <div className="h-28 bg-slate-200 rounded-2xl" />
+      <div className="h-28 bg-slate-200 rounded-lg" />
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="h-48 bg-slate-200 rounded-2xl" />
-        <div className="h-48 bg-slate-200 rounded-2xl" />
+        <div className="h-48 bg-slate-200 rounded-lg" />
+        <div className="h-48 bg-slate-200 rounded-lg" />
       </div>
     </div>
   );

@@ -82,7 +82,7 @@ export function TopNav() {
           </div>
           <button
             onClick={handleLogout}
-            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-150"
+            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors duration-150"
             title="Sign out"
           >
             <LogOut className="w-4 h-4" />

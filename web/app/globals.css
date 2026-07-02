@@ -54,6 +54,32 @@
   animation: fade-in-up 0.3s var(--ease-out-expo) both;
 }
 
+/* ── Card hover lift (pseudo-element opacity — does NOT animate box-shadow) ── */
+.card-lift {
+  position: relative;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-lift::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 4px 16px rgba(15,23,42,0.10), 0 2px 4px rgba(15,23,42,0.06);
+  opacity: 0;
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.card-lift:hover { transform: translateY(-2px); }
+.card-lift:hover::after { opacity: 1; }
+
+/* ── Button press micro-interaction (per-property timing) ─────────────────── */
+.btn-micro {
+  transition: background-color 150ms, color 150ms, border-color 150ms, transform 100ms ease-out;
+}
+.btn-micro:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 /* ── Animations ──────────────────────────────────────────────────────────────── */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(8px); }

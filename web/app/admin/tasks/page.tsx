@@ -67,7 +67,7 @@ export default function AdminTasksPage() {
               <Input label="Reward (KES)" name="reward" type="number" min="1" placeholder="10" required />
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Type</label>
-                <select name="type" className="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors bg-white text-slate-900" required>
+                <select name="type" className="w-full border border-slate-300 rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors bg-white text-slate-900" required>
                   <option value="DAILY_LOGIN">Daily Login</option>
                   <option value="LIKE_POST">Like Post</option>
                   <option value="VIEW_CONTENT">View Content</option>

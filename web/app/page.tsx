@@ -33,7 +33,7 @@ export default function HomePage() {
             <Link href="/login" className="text-sm text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">
               Sign in
             </Link>
-            <Link href="/register" className="text-sm text-white bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-xl transition-colors font-medium">
+            <Link href="/register" className="text-sm text-white bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-md transition-colors font-medium">
               Get started
             </Link>
           </div>
@@ -53,10 +53,10 @@ export default function HomePage() {
           Watch videos, complete daily tasks, and refer friends — every action earns credits straight to your wallet.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
-          <Link href="/register" className="inline-flex items-center justify-center text-white bg-sky-500 hover:bg-sky-600 px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm">
+          <Link href="/register" className="inline-flex items-center justify-center text-white bg-sky-500 hover:bg-sky-600 px-8 py-3 rounded-md font-semibold transition-colors shadow-sm">
             Start earning free
           </Link>
-          <Link href="/login" className="inline-flex items-center justify-center text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 px-8 py-3 rounded-xl font-medium transition-colors">
+          <Link href="/login" className="inline-flex items-center justify-center text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 px-8 py-3 rounded-md font-medium transition-colors">
             Sign in
           </Link>
         </div>
@@ -85,7 +85,7 @@ export default function HomePage() {
             {features.map(({ icon: Icon, color, title, desc }) => (
               <div
                 key={title}
-                className="bg-white border border-slate-200 rounded-2xl p-5 hover:-translate-y-0.5 hover:shadow-card-hover transition-all duration-200"
+                className="bg-white border border-slate-200 rounded-lg p-5 card-lift"
               >
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${iconColors[color]}`}>
                   <Icon className="w-4 h-4" />
@@ -104,7 +104,7 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">One membership, all access</h2>
           <p className="text-sm text-slate-500 mt-2">Activate once via M-Pesa. Start earning immediately.</p>
         </div>
-        <div className="bg-white border-2 border-sky-500 rounded-2xl p-7 shadow-card">
+        <div className="bg-white border-2 border-sky-500 rounded-lg p-7 shadow-card">
           <p className="text-xs font-semibold text-sky-600 uppercase tracking-wider mb-3">GETPAID Member</p>
           <div className="mb-5">
             <span className="text-4xl font-bold text-slate-900 tracking-tight">KES 150</span>
@@ -122,7 +122,7 @@ export default function HomePage() {
               </li>
             ))}
           </ul>
-          <Link href="/register" className="block w-full text-center text-white bg-sky-500 hover:bg-sky-600 px-4 py-2.5 rounded-xl font-semibold transition-colors text-sm">
+          <Link href="/register" className="block w-full text-center text-white bg-sky-500 hover:bg-sky-600 px-4 py-2.5 rounded-md font-semibold transition-colors text-sm">
             Get started
           </Link>
         </div>

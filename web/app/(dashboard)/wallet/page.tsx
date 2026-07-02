@@ -36,7 +36,7 @@ export default function WalletPage() {
       <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Wallet</h1>
 
       {/* Balance card */}
-      <div className="bg-gradient-to-br from-sky-600 to-sky-700 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-sky-600 to-sky-700 rounded-lg p-6 text-white">
         <p className="text-sm text-sky-200 mb-1">Balance</p>
         <p className="text-4xl font-bold mb-0.5 tracking-tight">{formatKES(wallet?.virtualBalance ?? 0)}</p>
         <p className="text-xs text-sky-300">KES</p>
@@ -66,7 +66,7 @@ export default function WalletPage() {
           {!membership?.isActive && (
             <Card>
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
@@ -203,7 +203,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-white w-full sm:max-w-sm rounded-t-xl sm:rounded-xl shadow-2xl overflow-hidden">
 
         {/* ── Phone input ── */}
         {stage === "phone" && (
@@ -212,7 +212,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
               <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/5" />
               <div className="relative z-10">
-                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <div className="w-14 h-14 bg-white/20 rounded-lg flex items-center justify-center mx-auto mb-3">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
@@ -223,10 +223,10 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
             </div>
 
             <form onSubmit={handleSend} className="px-6 py-6 space-y-5 -mt-4">
-              <div className="bg-white rounded-2xl shadow-md p-5 space-y-4">
+              <div className="bg-white rounded-lg shadow-md p-5 space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">M-Pesa Number</label>
-                  <div className="flex items-center border-2 border-slate-200 rounded-xl overflow-hidden focus-within:border-green-500 transition-colors">
+                  <div className="flex items-center border-2 border-slate-200 rounded-md overflow-hidden focus-within:border-green-500 transition-colors">
                     <span className="px-3 py-3 bg-slate-50 text-sm font-semibold text-slate-600 border-r border-slate-200 select-none">+254</span>
                     <input
                       type="tel"
@@ -242,7 +242,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
                   <p className="text-xs text-slate-400 mt-1.5">A payment prompt will be sent to this number</p>
                 </div>
 
-                <div className="bg-green-50 rounded-xl p-3 space-y-1.5">
+                <div className="bg-green-50 rounded-md p-3 space-y-1.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Membership activation</span>
                     <span className="font-semibold text-slate-900">KES {MEMBERSHIP_COST}</span>
@@ -257,7 +257,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               <button
                 type="submit"
                 disabled={phone.length !== 9}
-                className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all duration-150 text-sm flex items-center justify-center gap-2"
+                className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-md transition-all duration-150 text-sm flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -295,7 +295,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               {[3, 5, 7, 9, 11].map((h, i) => (
                 <div
                   key={i}
-                  className="w-2 bg-green-500 rounded-sm origin-bottom"
+                  className="w-2 bg-green-500 rounded-[2px] origin-bottom"
                   style={{
                     height: `${h * 3}px`,
                     animation: `signal-rise 0.6s ease-out ${i * 0.12}s both`,
@@ -331,7 +331,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
               <div
                 className={`absolute inset-0 flex items-center justify-center transition-transform ${isVibrating ? "animate-phone-vibrate" : ""}`}
               >
-                <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-200">
+                <div className="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center shadow-lg shadow-green-200">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
@@ -349,7 +349,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
             <p className="text-sm text-slate-400 text-center mb-6">Enter your M-Pesa PIN to complete payment</p>
 
             {simMode && (
-              <div className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 mb-4 text-center">
+              <div className="w-full bg-amber-50 border border-amber-200 rounded-md px-4 py-2.5 mb-4 text-center">
                 <p className="text-xs text-amber-700 font-medium">Simulation mode — auto-completing in a moment</p>
               </div>
             )}
@@ -403,7 +403,7 @@ function StkPushModal({ onClose }: { onClose: () => void }) {
             <p className="text-sm text-slate-500 text-center mb-6">{errorMsg}</p>
             <button
               onClick={handleRetry}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl text-sm transition-colors mb-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-md text-sm transition-colors mb-2"
             >
               Try again
             </button>
@@ -475,7 +475,7 @@ function SuccessStage({ onClose, phone }: { onClose: () => void; phone: string }
       </div>
 
       <div
-        className="mt-5 bg-green-50 border border-green-200 rounded-2xl px-6 py-4 text-center w-full animate-slide-up-fade"
+        className="mt-5 bg-green-50 border border-green-200 rounded-lg px-6 py-4 text-center w-full animate-slide-up-fade"
         style={{ animationDelay: "0.55s", opacity: 0 }}
       >
         <p className="text-base font-bold text-green-700">Welcome to GETPAID!</p>
@@ -544,7 +544,7 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
       <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-4">
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-slate-700">M-Pesa phone number</label>
-          <div className="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 transition-colors">
+          <div className="flex items-center border border-slate-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-sky-500 focus-within:border-sky-500 transition-colors">
             <span className="px-3 py-2.5 bg-slate-50 text-sm text-slate-500 font-medium border-r border-slate-300 select-none">+254</span>
             <input
               type="tel"
@@ -567,11 +567,11 @@ function WithdrawTab({ balance, isActivated }: { balance: number; isActivated: b
             min="10"
             max={balance}
             required
-            className="block w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
+            className="block w-full px-4 py-2.5 border border-slate-300 rounded-md text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors"
           />
           <p className="text-xs text-slate-400">Available: {formatKES(balance)}</p>
         </div>
-        <button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm">
+        <button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-md transition-colors text-sm">
           Request withdrawal
         </button>
       </form>
@@ -583,9 +583,9 @@ function WalletSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
       <div className="h-8 bg-slate-200 rounded w-32" />
-      <div className="h-36 bg-slate-200 rounded-2xl" />
-      <div className="h-40 bg-slate-200 rounded-2xl" />
-      <div className="h-64 bg-slate-200 rounded-2xl" />
+      <div className="h-36 bg-slate-200 rounded-lg" />
+      <div className="h-40 bg-slate-200 rounded-lg" />
+      <div className="h-64 bg-slate-200 rounded-lg" />
     </div>
   );
 }

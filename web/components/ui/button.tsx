@@ -18,8 +18,8 @@ const variants = {
 
 const sizes = {
   sm: "h-8 px-3 text-sm rounded-md",
-  md: "h-10 px-4 text-sm rounded-xl",
-  lg: "h-12 px-6 text-base rounded-xl",
+  md: "h-10 px-4 text-sm rounded-md",
+  lg: "h-12 px-6 text-base rounded-md",
 };
 
 export function Button({ variant = "primary", size = "md", loading, disabled, className, children, ...props }: ButtonProps) {
@@ -28,7 +28,7 @@ export function Button({ variant = "primary", size = "md", loading, disabled, cl
       {...props}
       disabled={disabled ?? loading}
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150",
+        "inline-flex items-center justify-center gap-2 font-medium btn-micro",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed",
         variants[variant],

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User, Tag, ArrowRight } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
+import { Input } from "@/components/ui/input";
 import type { RegisterResponse } from "@/lib/types";
 
 function RegisterForm() {
@@ -52,107 +53,84 @@ function RegisterForm() {
           <p className="text-slate-500 mt-1.5">Join the GETPAID community</p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-card">
+        <div className="bg-white border border-slate-200 rounded-lg p-8 shadow-card">
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-700">Full name</label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  name="name"
-                  type="text"
-                  placeholder="Enter your full names"
-                  required
-                  minLength={2}
-                  className="block w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 hover:border-slate-400 transition-colors"
-                />
-              </div>
-            </div>
+            <Input
+              name="name"
+              type="text"
+              label="Full name"
+              placeholder="Enter your full names"
+              startIcon={<User className="w-4 h-4" />}
+              required
+              minLength={2}
+            />
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-700">Email address</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email address"
-                  required
-                  autoComplete="email"
-                  className="block w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 hover:border-slate-400 transition-colors"
-                />
-              </div>
-            </div>
+            <Input
+              name="email"
+              type="email"
+              label="Email address"
+              placeholder="Enter your email address"
+              startIcon={<Mail className="w-4 h-4" />}
+              required
+              autoComplete="email"
+            />
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-700">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Choose a strong password"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  className="block w-full pl-10 pr-11 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 hover:border-slate-400 transition-colors"
-                />
+            <Input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              label="Password"
+              placeholder="Choose a strong password"
+              startIcon={<Lock className="w-4 h-4" />}
+              endIcon={
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
+              }
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-700">Confirm password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  name="confirmPassword"
-                  type={showConfirm ? "text" : "password"}
-                  placeholder="••••••••"
-                  required
-                  autoComplete="new-password"
-                  className="block w-full pl-10 pr-11 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 hover:border-slate-400 transition-colors"
-                />
+            <Input
+              name="confirmPassword"
+              type={showConfirm ? "text" : "password"}
+              label="Confirm password"
+              placeholder="••••••••"
+              startIcon={<Lock className="w-4 h-4" />}
+              endIcon={
                 <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                   aria-label={showConfirm ? "Hide password" : "Show password"}
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
+              }
+              required
+              autoComplete="new-password"
+            />
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-slate-700">
-                Referral code <span className="text-slate-400 font-normal">(optional)</span>
-              </label>
-              <div className="relative">
-                <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  name="referralCode"
-                  type="text"
-                  placeholder="Enter code"
-                  defaultValue={params.get("ref") ?? ""}
-                  maxLength={12}
-                  className="block w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 hover:border-slate-400 transition-colors"
-                />
-              </div>
-            </div>
+            <Input
+              name="referralCode"
+              type="text"
+              label={<>Referral code <span className="text-slate-400 font-normal">(optional)</span></>}
+              placeholder="Enter code"
+              defaultValue={params.get("ref") ?? ""}
+              maxLength={12}
+              startIcon={<Tag className="w-4 h-4" />}
+            />
 
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-4 py-2.5">
                 {error}
               </div>
             )}
@@ -160,7 +138,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 active:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-xl transition-colors mt-1"
+              className="w-full flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 active:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-md transition-colors mt-1"
             >
               {loading ? (
                 <>

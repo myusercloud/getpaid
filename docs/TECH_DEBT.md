@@ -1,5 +1,58 @@
 # Tech Debt
 
+## TD-002 — No formal migration directory; schema applied via `prisma db push`
+
+**Status:** Open — no action blocked today, but must be resolved before any non-additive change.
+
+### Problem
+
+This project has no `prisma/migrations/` directory. All schema changes to date have been applied
+via `npx prisma db push`, which diffs the live database against `schema.prisma` and applies
+changes directly. There is no migration history, no `prisma migrate deploy` path, and no SQL
+audit trail of what changed and when.
+
+**Pre-promotion SQL diff (2026-07-02, commit `0502793`):**
+
+```sql
+-- This is an empty migration.
+```
+
+Output from `prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script`. The empty result confirms the live Neon DB already matches the target schema — the v0.3.0 schema changes (AiTask, AiTaskCompletion, AI_TASK_REWARD enum) were applied directly to the live DB during development via `db push`. No migration is needed at deploy time for this release, but no formal record of those changes exists.
+
+### Why this is acceptable now
+
+All v0.3.0 schema changes were additive (new tables, new enum values, no modifications to
+existing columns). Additive changes applied via `db push` are safe:
+
+- New tables can't break existing queries
+- New PostgreSQL enum values (`ALTER TYPE ... ADD VALUE`) are non-transactional but non-destructive on PG 12+
+- No existing column types were changed, no columns were dropped
+
+### Why this becomes a problem
+
+Any future **non-additive** change — column rename, column removal, type change, dropping an
+enum value, changing a `String?` to a required `String` — cannot be safely applied via
+`db push`. Prisma will either refuse (`--accept-data-loss` required) or silently run a
+`DROP COLUMN`, which is **unrecoverable without a DB restore**.
+
+There is also no rollback path: if a `db push` fails mid-apply, there is no migration to
+revert. Neon's point-in-time recovery is the only backstop, and it's manual.
+
+### What to do before the next non-additive change
+
+1. **Baseline the schema:** Run `prisma migrate diff --from-empty --to-schema-datasource prisma/schema.prisma --script > prisma/migrations/0000_baseline/migration.sql` and create an initial migration that represents the current live schema. Mark it applied in the `_prisma_migrations` table (`prisma migrate resolve --applied 0000_baseline`).
+
+2. **Switch to `prisma migrate dev` for future changes.** All new schema changes go through `migrate dev` (generates SQL, records in `_prisma_migrations`) and deploy via `migrate deploy` (applies only unapplied migrations). Never use `db push` again except against a throwaway local DB.
+
+3. **Add a staging Neon branch.** Neon supports branching — create a `staging` branch that mirrors production. Run `migrate deploy` against it before applying to production. This provides a real dry-run environment.
+
+### Priority
+
+High — block any non-additive schema change until step 1+2 above are done. Steps 1–3 are
+a few hours of work and should be done before the next feature that touches the data model.
+
+---
+
 ## TD-001 — logo-hero.png: source file too large for web serving
 
 **File:** `web/public/logo-hero.png`  

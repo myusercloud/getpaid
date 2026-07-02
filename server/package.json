@@ -10,7 +10,10 @@
     "db:seed": "dotenv -e .env -- tsx prisma/seed.ts",
     "db:reset": "dotenv -e .env -- prisma migrate reset --force --schema ./prisma/schema.prisma",
     "db:studio": "dotenv -e .env -- prisma studio --schema ./prisma/schema.prisma",
-    "db:generate": "dotenv -e .env -- prisma generate --schema ./prisma/schema.prisma"
+    "db:generate": "dotenv -e .env -- prisma generate --schema ./prisma/schema.prisma",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@fastify/cookie": "^9.4.0",
@@ -28,9 +31,11 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.5",
+    "@vitest/coverage-v8": "^4.1.9",
     "dotenv-cli": "^7.4.2",
     "prisma": "^5.22.0",
     "tsx": "^4.19.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.9"
   }
 }
